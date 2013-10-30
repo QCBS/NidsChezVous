@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+
+function nids_schema() {
+  /*$schema = array();
+  $schema['nids_observations'] = array(
+    'description' => 'The base table for metadata datasets.',
+    'fields' => array(
+      'mid' => array(
+        'description' => 'The primary identifier for a metadata dataset entry.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'nid' => array(
+        'description' => 'The foreign key for the node',
+        'type' => 'int',
+        'not null' => TRUE),
+       'dataset_name' => array(
+        'description' => 'The name of the dataset',
+        'type' => 'varchar',
+        'length' => 255),
+      'dataset_description' => array(
+        'description' => 'The description of the dataset.',
+        'type' => 'text'),
+    ),
+      'indexes' => array(
+        'node_dataset' => array('nid')
+      ),
+      'foreign keys' => array(
+        'node' => array(
+          'table' => 'node',
+          'columns' => array('nid' => 'nid'),
+         )
+      ),
+      'primary key' => array('mid'),
+  );
+  return $schema;
+  */
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function nids_uninstall() {
+  /*$results = db_select('node', 'n')->fields('n', array('nid'))->condition('type', 'nids' ,'=')->execute()->fetchAll();
+  foreach($results as $result) {
+    node_delete($result->nid);
+  }
+  db_drop_table('nids_dataset');
+  node_types_rebuild();
+  menu_rebuild();
+  */
+}
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function nids_install() {
+  $mnode = new stdClass();
+  $mnode->title = "Dans ton nichoir";
+  $mnode->type = "nids";
+  node_object_prepare($mnode); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
+  $mnode->language = LANGUAGE_NONE; // Or e.g. 'en' if locale is enabled
+  $mnode->status = 1; //(1 or 0): published or not
+  $mnode->promote = 1; //(1 or 0): promoted to front page
+  $mnode->comment = 0; // 0 = comments disabled, 1 = read only, 2 = read/write
+  $mnode = node_submit($mnode); // Prepare node for saving
+  node_save($mnode);
+}
+
+
+
+
+?>
