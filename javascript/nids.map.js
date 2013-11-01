@@ -129,7 +129,6 @@
     startPoint: function() {
       var self = this,
       mark = new google.maps.Marker({});
-
       mark.setMap(this.map);
       google.maps.event.clearListeners(this.map, 'click');
       google.maps.event.addListener(this.map, 'click', function(e) { self.addMarker(e.latLng); });
@@ -220,12 +219,12 @@
     },
 
     addMarker: function(position) {
+      self=this;
       var marker = {};
-
+      self.clearOverlays();
       marker = this.createMarker(position, this.marker_icon);
       this.markers.push(marker);
       this.buildGeoJSON();
-      
       if(this.isEditMode()) {
         this.addMarkerListener(marker);
       }
@@ -233,9 +232,7 @@
 
     addMarkerListener: function(marker) {
       var self = this;
-
       google.maps.event.addListener(marker, 'click', function() {
-        marker.setMap(null);
         $.each(self.markers, function(i) {
           if(marker === this) {
             self.markers.splice(i,1);
@@ -243,6 +240,10 @@
           }
         });
       });
+    },
+
+    clearListeners: function(marker) {
+      google.maps.event.clearListeners(this.map, 'click');
     },
 
     addCoordinates: function() {
