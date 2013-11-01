@@ -60,7 +60,7 @@ function nids_uninstall() {
  * Implements hook_uninstall().
  */
 function nids_install() {
-  $mnode = new stdClass();
+  /*$mnode = new stdClass();
   $mnode->title = "Dans ton nichoir";
   $mnode->type = "nids";
   node_object_prepare($mnode); // Sets some defaults. Invokes hook_prepare() and hook_node_prepare().
@@ -70,6 +70,15 @@ function nids_install() {
   $mnode->comment = 0; // 0 = comments disabled, 1 = read only, 2 = read/write
   $mnode = node_submit($mnode); // Prepare node for saving
   node_save($mnode);
+  */
+  $menu = array(
+        'menu_name' => 'quastuvu',
+        'title' => "Qu'as-tu vu?",
+        'description' => 'Menu observations'
+    );
+  menu_save($menu);
+  cache_clear_all('*', 'cache_menu', TRUE);
+
 }
 
 
