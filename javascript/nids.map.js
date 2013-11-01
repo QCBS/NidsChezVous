@@ -234,6 +234,7 @@
       var self = this;
       google.maps.event.addListener(marker, 'click', function() {
         $.each(self.markers, function(i) {
+          marker.setMap(null);
           if(marker === this) {
             self.markers.splice(i,1);
             self.buildGeoJSON();
