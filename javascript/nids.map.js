@@ -304,6 +304,10 @@
       var geocoder;
       geocoder = new google.maps.Geocoder();
       locname=$("input[name='location_name']").val();
+      suffix='Quebec';
+      if(locname.indexOf(suffix, locname.length - suffix.length) == -1) {
+        locname=locname + 'Quebec';
+      }
       self.geocodePosition(locname,geocoder);
     },
 
@@ -313,6 +317,7 @@
         if (status == google.maps.GeocoderStatus.OK) {
           $('#noloc').hide();
           self.addMarker(results[0].geometry.location);
+          self.map.setCenter(results[0].geometry.location);
         } else {
           $('#noloc').show(); 
         }

@@ -1,0 +1,7 @@
+.textfield {
+    font: inherit;
+    color: inherit;
+    text-align: left !important;
+    outline: none;
+    cursor: text;
+}
