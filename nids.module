@@ -192,16 +192,68 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
 
     drupal_add_js(array('nids_mode' => 'edit'), 'setting');
 
+    $form['dncv'] = array(
+      '#title' => t("Est-ce un nichoir construit par Des nids chez vous?"),
+      '#type' => 'select',
+      '#required' => TRUE,
+      '#default_value' => '',
+      '#options' => array(
+        'Oui' => 'Oui',
+        'Non' => 'Non',
+      ),
+    );
+
+    $form['numero'] = array(
+      '#title' => t("Quel est le numéro du nichoir?"),
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#size' => 15,
+      '#default_value' => '',
+      '#states' => array(
+        'visible' => array(
+          ':input[name="dncv"]' => array('value' => 'Oui')
+        ),
+      ),
+    );
+
+    $form['nom_nichoir'] = array(
+      '#title' => t("Quel nom voulez-vous donner à ce nichoir (par ex. cabanon, bouleau)?"),
+      '#type' => 'textfield',
+      '#size' => 35,
+      '#required' => FALSE,
+      '#default_value' => '',
+    );
+
+
     $form['geo'] = array(
       '#title' => t(''),
       '#type' => 'fieldset',
       );
+
+    global $user;
+    /*$user_role=db_select('users_roles',role)
+    ->fields('rid')
+    ->condition('uid', $user,'=')
+    ->execute()
+    ->fetchAssoc();
+    */
+    $adresse=db_select('nids_users','n')
+    ->fields('n')
+    ->condition('uid',$user->uid,'=')
+    ->execute();
+
+    if ($adresse->rowCount()>0){
+      $adresse=$adresse->fetchAssoc();
+      $add=$adresse['adresse'].', '.$adresse['ville'];
+    }else{
+      $add='';
+    }
     $form['geo']['location_name'] = array(
       '#title' => t('Entre ton adresse (e.g. 21 Saint-Germain Ouest, Rimouski, G5L 4B4)'),
       '#type' => 'hidden',
       '#size' => 100,
       '#required' => FALSE,
-      '#prefix' => '<div class="nidsbox"><h2>'.t('Lieu du nichoir').'</h2>',
+      '#prefix' => '<div id="adresse" style="display:none;">'.$add.'</div><div class="nidsbox"><h2>'.t('Lieu du nichoir').'</h2>',
       //'#suffix' => '<div id="noloc" style="display:none;">'.t('Ce nom ne peut être reconnu!').'</div><button type="button" id="addbynamebut">'.t('Ajouter un marqueur à cet endroit sur la carte (OPTION 1)').'</button>',
       '#default_value' => isset($form['#node']->nichoir['site_details']['location_name']) ? $form['#node']->nichoir['site_details']['location_name'] : ""
       );
@@ -230,13 +282,6 @@ $form['date'] = array(
   '#size' => 30,
   '#title' => "Date de l'installation du nichoir",
   '#required' => TRUE,
-  );
-
-$form['numero'] = array(
-  '#title' => t("Quel est le numéro du nichoir?"),
-  '#type' => 'textfield',
-  '#required' => TRUE,
-  '#default_value' => '',
   );
 
 $form['habitat'] = array(
@@ -300,16 +345,16 @@ $form['options']['status']['#checked'] = TRUE;
 drupal_set_title(t("Ajouter un nichoir"));
 return $form;
 
-}else if($form_id == 'user_register_form') {
+}else if($form_id == 'user_register_form' | $form_id == 'user_profile_form') {
 
   $form['type_utilisateur'] = array(
     '#title' => t("S'insrire en tant que..."),
     '#type' => 'select',
     '#options' => array(
-      'enfant' => 'Enfant',
-      'representant_scolaire' => 'Représentant scolaire',
-      'citoyen' => 'Citoyen',
-      'chercheur' => 'Chercheur scientifique',
+      4 => 'Enfant',
+      5 => 'Représentant scolaire',
+      7 => 'Citoyen',
+      //6 => 'Chercheur scientifique',
       ),
     '#required' => TRUE,
     '#default_value' => 'Choisir',
@@ -320,11 +365,11 @@ return $form;
     '#type' => 'select',
     '#options' => array(
       'Choisir' => 'Choisir...',
-      'rose_des_vents' => 'École Rose des Vents',
-      'des_sources' => 'École des Sources',
-      'du_rocher_auteuil' => 'École du Rocher-Auteuil',
-      'des_sources' => 'École Mont Saint-Louis',
-      'saint_rosaire' => 'École Saint-Rosaire',
+      'École Rose des Vents' => 'École Rose des Vents',
+      'École des Sources' => 'École des Sources',
+      'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
+      'École Mont Saint-Louis' => 'École Mont Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
       ),
     '#required' => FALSE,
     '#states' => array(
@@ -403,6 +448,34 @@ return $form;
 // Form builder. Form ID = function name
 function nids_obsnichoir_form($form, &$form_state) {
 
+  $path=drupal_get_path_alias(current_path());
+  
+  $form['parc_check'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $path,
+  );
+
+  $form['parc'] = array(
+    '#title' => t("Pour quel parc?"),
+    '#type' => 'select',
+    '#options' => array(
+      'Choisir' => 'Choisir...',
+      'Lepage' => 'Lepage',
+      'Beauséjour' => 'Beauséjour',
+      'La gare' => 'La gare',
+      'Mont-Saint-Louis' => 'Mont-Saint Louis',
+      'Mairie Saint-Anaclet' => 'Mairie Saint-Anaclet',
+      ),
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="parc_check"]' => array('value' => 'nichoir_parc'),
+      )
+    ),
+    '#default_value' => 'Choisir',
+  );
+
+
   $form['nichoir'] = array(
     '#title' => t("Pour quel nichoir?"),
     '#type' => 'select',
@@ -433,10 +506,11 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => array(
       'Choisir' => 'Choisir...',
-      'Moineau_domestique' => 'Moineau domestique',
-      'Hirondelle_bicolore' => 'Hirondelle bicolore',
-      'Mesange_a_tete_noire' => 'Mésange à tête noire',
-      'Mesange_brune' => 'Mésange brune',
+      'Moineau domestique' => 'Moineau domestique',
+      'Hirondelle bicolore' => 'Hirondelle bicolore',
+      'Mésange à tête noire' => 'Mésange à tête noire',
+      'Mésange brune' => 'Mésange brune',
+      'Sitelle à poitrine rousse' => 'Sitelle à poitrine rousse',
       'Inconnue' => 'Inconnue',
       'Autre' => 'Autre'
       ),
@@ -473,9 +547,9 @@ function nids_obsnichoir_form($form, &$form_state) {
       3 => t("Accouplement"),
       4 => t('Sons de poussins, quémande alimentaire'),
       5 => t('Alimentation des poussins par les parents (bec avec des chenilles, etc.)'),
-      6 => t('Chante sur ou proche du nichoir'),
-      7 => t('Oiseau chante sur nichoir'),
-      8 => t('Indiquer un nombre de visites au nichoir pendant 5 minutes'),
+      6 => t('Oiseau chante sur ou proche du nichoir'),
+      7 => t('Indiquer un nombre de visites au nichoir pendant 5 minutes'),
+      8 => t('Les oiseaux semblent avoir abandonné le nid'),
       9 => t('Autre'),
       ),
     '#states' => array(
@@ -497,7 +571,7 @@ function nids_obsnichoir_form($form, &$form_state) {
         ),
       ),
     );
-
+  /*
   $form['nombre_visite'] = array(
     '#type' => 'textfield',
     '#size' => 70,
@@ -509,30 +583,30 @@ function nids_obsnichoir_form($form, &$form_state) {
         ),
       ),
     );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t("Ajouter l'observation!"),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="type_obs"]' => array('!value' => false),
-        ':input[name="esp"]' => array('!value' => 'Choisir'),
-        ),
+*/
+$form['submit'] = array(
+  '#type' => 'submit',
+  '#value' => t("Ajouter l'observation!"),
+  '#states' => array(
+    'visible' => array(
+      ':input[name="type_obs"]' => array('!value' => false),
+      ':input[name="esp"]' => array('!value' => 'Choisir'),
       ),
-    '#suffix' => '<div style="height:100px;"></div>',
-    );
+    ),
+  '#suffix' => '<div style="height:100px;"></div>',
+  );
 
-  $module_path = base_path().drupal_get_path('module', 'nids');
+$module_path = base_path().drupal_get_path('module', 'nids');
 
-  $js_files = array(
-    $module_path . '/javascript/nids.jqueryui.js',
-    $module_path . '/javascript/selectboxit.js',
-    );
-  $form['#attached']['js'] = $js_files;
-  $form['#validate'][] = 'nids_form_validate';
-  $form['#submit'][] = 'nids_form_submit';
-  $form['title']['#title'] = 'Ajouter un nichoir';
-  return $form;
+$js_files = array(
+  $module_path . '/javascript/nids.jqueryui.js',
+  $module_path . '/javascript/selectboxit.js',
+  );
+$form['#attached']['js'] = $js_files;
+$form['#validate'][] = 'nids_form_validate';
+$form['#submit'][] = 'nids_form_submit';
+$form['title']['#title'] = 'Ajouter un nichoir';
+return $form;
 }
 
 function nids_obsmangeoire_form($form, &$form_state) {
@@ -541,7 +615,7 @@ function nids_obsmangeoire_form($form, &$form_state) {
     '#type' => 'date_popup',
     '#date_format' => 'Y-m-d H:i',
     '#size' => 30,
-    '#title' => "Date et heure de l'observation",
+    '#title' => "Date et heure (sur 24h) de l'observation",
     '#required' => FALSE,
     );
 
@@ -576,142 +650,142 @@ function nids_obsmangeoire_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => array(
       "Espèces communes"=>array( //"--- Espèces communes ---",
-      "Bruant à couronne blanche"=>"Bruant à couronne blanche",
-      "Bruant à gorge blanche"=>"Bruant à gorge blanche",
-      "Bruant chanteur"=>"Bruant chanteur",
-      "Carouge à épaulette"=>"Carouge à épaulette",
-      "Chardonneret jaune"=>"Chardonneret jaune",
-      "Colibri à gorge rubis"=>"Colibri à gorge rubis",
-      "Corneille d'Amérique"=>"Corneille d'Amérique",
-      "Étourneau sansonnet"=>"Étourneau sansonnet",
-      "Geai bleu"=>"Geai bleu",
-      "Hirondelle bicolore"=>"Hirondelle bicolore",
-      "Jaseur d'Amérique"=>"Jaseur d'Amérique",
-      "Junco ardoisé"=>"Junco ardoisé",
-      "Merle d'Amérique"=>"Merle d'Amérique",
-      "Mésange à tête noire"=>"Mésange à tête noire",
-      "Moineau domestique"=>"Moineau domestique",
-      "Paruline è croupion jaune"=>"Paruline è croupion jaune",
-      "Pic chevelu"=>"Pic chevelu",
-      "Quiscale bronzé"=>"Quiscale bronzé",
-      "Roselin pourpré"=>"Roselin pourpré",
-      "Tourterelle triste"=>"Tourterelle triste",
-      ),
+        "Bruant à couronne blanche"=>"Bruant à couronne blanche",
+        "Bruant à gorge blanche"=>"Bruant à gorge blanche",
+        "Bruant chanteur"=>"Bruant chanteur",
+        "Carouge à épaulette"=>"Carouge à épaulette",
+        "Chardonneret jaune"=>"Chardonneret jaune",
+        "Colibri à gorge rubis"=>"Colibri à gorge rubis",
+        "Corneille d'Amérique"=>"Corneille d'Amérique",
+        "Étourneau sansonnet"=>"Étourneau sansonnet",
+        "Geai bleu"=>"Geai bleu",
+        "Hirondelle bicolore"=>"Hirondelle bicolore",
+        "Jaseur d'Amérique"=>"Jaseur d'Amérique",
+        "Junco ardoisé"=>"Junco ardoisé",
+        "Merle d'Amérique"=>"Merle d'Amérique",
+        "Mésange à tête noire"=>"Mésange à tête noire",
+        "Moineau domestique"=>"Moineau domestique",
+        "Paruline è croupion jaune"=>"Paruline è croupion jaune",
+        "Pic chevelu"=>"Pic chevelu",
+        "Quiscale bronzé"=>"Quiscale bronzé",
+        "Roselin pourpré"=>"Roselin pourpré",
+        "Tourterelle triste"=>"Tourterelle triste",
+        ),
       "Autres espèces"=>array(//"--- Autres espèces ---",
-      "Alouette hausse-col"=>"Alouette hausse-col",
-      "Autour des palombes"=>"Autour des palombes",
-      "Avocette d'Amérique"=>"Avocette d'Amérique",
-      "Balbuzard pêcheur"=>"Balbuzard pêcheur",
-      "Bécasseau semipalmé"=>"Bécasseau semipalmé",
-      "Bernache cravant"=>"Bernache cravant",
-      "Bernache du Canada"=>"Bernache du Canada",
-      "Bruant de Lincoln"=>"Bruant de Lincoln",
-      "Bruant des prés"=>"Bruant des prés",
-      "Bruant familier"=>"Bruant familier",
-      "Bruant fauve"=>"Bruant fauve",
-      "Bruant hudsonien"=>"Bruant hudsonien",
-      "Busard St-Martin"=>"Busard St-Martin",
-      "Buse à queue rousse"=>"Buse à queue rousse",
-      "Buse pattue"=>"Buse pattue",
-      "Canard arlequin"=>"Canard arlequin",
-      "Canard colvert"=>"Canard colvert",
-      "Canard d'Amérique"=>"Canard d'Amérique",
-      "Canard noir"=>"Canard noir",
-      "Canard pilet"=>"Canard pilet",
-      "Chevalier grivelé"=>"Chevalier grivelé",
-      "Chevalier solitaire"=>"Chevalier solitaire",
-      "Cormorant à aigrette"=>"Cormorant à aigrette",
-      "Crécerelle d'Amérique"=>"Crécerelle d'Amérique",
-      "Eider à duvet"=>"Eider à duvet",
-      "Eider à tête grise"=>"Eider à tête grise",
-      "Épervier brun"=>"Épervier brun",
-      "Faucon émerillon"=>"Faucon émerillon",
-      "Faucon pèlerin"=>"Faucon pèlerin",
-      "Fou de Bassan"=>"Fou de Bassan",
-      "Fuligule à collier"=>"Fuligule à collier",
-      "Fuligule milouinan"=>"Fuligule milouinan",
-      "Garrot à œil d'or"=>"Garrot à œil d'or",
-      "Garrot d'Islande"=>"Garrot d'Islande",
-      "Gélinotte huppé"=>"Gélinotte huppé",
-      "Goéland à bec cerclé"=>"Goéland à bec cerclé",
-      "Goéland arctique"=>"Goéland arctique",
-      "Goéland argenté"=>"Goéland argenté",
-      "Goéland bourgmestre"=>"Goéland bourgmestre",
-      "Goéland marin"=>"Goéland marin",
-      "Grand Chevalier"=>"Grand Chevalier",
-      "Grand Corbeau"=>"Grand Corbeau",
-      "Grand Harle"=>"Grand Harle",
-      "Grand Heron"=>"Grand Heron",
-      "Grand Pic"=>"Grand Pic",
-      "Grèbe à bec bigarré"=>"Grèbe à bec bigarré",
-      "Grèbe jougris"=>"Grèbe jougris",
-      "Grive à dos olive"=>"Grive à dos olive",
-      "Grive fauve"=>"Grive fauve",
-      "Grive solitaire"=>"Grive solitaire",
-      "Gros-bec errant"=>"Gros-bec errant",
-      "Guillemot à miroir"=>"Guillemot à miroir",
-      "Harelde kakawi"=>"Harelde kakawi",
-      "Harle couronné"=>"Harle couronné",
-      "Harle huppé"=>"Harle huppé",
-      "Hirondelle rustique"=>"Hirondelle rustique",
-      "Jaseur boréal"=>"Jaseur boréal",
-      "Macareux moine"=>"Macareux moine",
-      "Macreuse à bec jaune"=>"Macreuse à bec jaune",
-      "Macreuse à front blanc"=>"Macreuse à front blanc",
-      "Macreuse brune"=>"Macreuse brune",
-      "Martin-pêcheur d'Amérique"=>"Martin-pêcheur d'Amérique",
-      "Merlebleu de l'Est"=>"Merlebleu de l'Est",
-      "Mésange à tête brune"=>"Mésange à tête brune",
-      "Mésangeai du Canada"=>"Mésangeai du Canada",
-      "Moqueur chat"=>"Moqueur chat",
-      "Moucherolle tchébec"=>"Moucherolle tchébec",
-      "Oie des neiges"=>"Oie des neiges",
-      "Paruline à calotte noire"=>"Paruline à calotte noire",
-      "Paruline à collier"=>"Paruline à collier",
-      "Paruline à gorge noire"=>"Paruline à gorge noire",
-      "Paruline à tête cendrée"=>"Paruline à tête cendrée",
-      "Paruline bleue"=>"Paruline bleue",
-      "Paruline des ruisseaux"=>"Paruline des ruisseaux",
-      "Paruline flamboyant"=>"Paruline flamboyant",
-      "Paruline jaune"=>"Paruline jaune",
-      "Paruline masquée"=>"Paruline masquée",
-      "Paruline noir et blanc"=>"Paruline noir et blanc",
-      "Paruline obscur"=>"Paruline obscur",
-      "Paruline tigrée"=>"Paruline tigrée",
-      "Petit Garrot"=>"Petit Garrot",
-      "Pic flamboyant"=>"Pic flamboyant",
-      "Pic maculé"=>"Pic maculé",
-      "Pic mineur"=>"Pic mineur",
-      "Pie-grièche grise"=>"Pie-grièche grise",
-      "Pigeon biset"=>"Pigeon biset",
-      "Pipit d'Amérique"=>"Pipit d'Amérique",
-      "Plectrophane des neiges"=>"Plectrophane des neiges",
-      "Plectrophane lapon"=>"Plectrophane lapon",
-      "Plongeon catmarin"=>"Plongeon catmarin",
-      "Plongeon huard"=>"Plongeon huard",
-      "Pluvier kildir"=>"Pluvier kildir",
-      "Pluvier semipalmé"=>"Pluvier semipalmé",
-      "Pypargue à tête blanche"=>"Pypargue à tête blanche",
-      "Roitelet à couronne dorée"=>"Roitelet à couronne dorée",
-      "Roitelet à couronne rubis"=>"Roitelet à couronne rubis",
-      "Roselin familier"=>"Roselin familier",
-      "Sarcelle à ailes bleues"=>"Sarcelle à ailes bleues",
-      "Sarcelle d'été"=>"Sarcelle d'été",
-      "Sarcelle d'hiver"=>"Sarcelle d'hiver",
-      "Sitelle à poitrine blanche"=>"Sitelle à poitrine blanche",
-      "Sitelle à poitrine rousse"=>"Sitelle à poitrine rousse",
-      "Sizerin blanchâtre"=>"Sizerin blanchâtre",
-      "Sizerin flammé"=>"Sizerin flammé",
-      "Tarin des pins"=>"Tarin des pins",
-      "Tohi à flancs roux"=>"Tohi à flancs roux",
-      "Troglodyte des forêts"=>"Troglodyte des forêts",
-      "Troglodyte familier"=>"Troglodyte familier",
-      "Urubu à tête rouge"=>"Urubu à tête rouge",
-      "Vacher à tête brune"=>"Vacher à tête brune",
-      "Viréo à tête bleue"=>"Viréo à tête bleue",
-      "Viréo aux yeux rouges"=>"Viréo aux yeux rouges",
-      ),
-      ),
+        "Alouette hausse-col"=>"Alouette hausse-col",
+        "Autour des palombes"=>"Autour des palombes",
+        "Avocette d'Amérique"=>"Avocette d'Amérique",
+        "Balbuzard pêcheur"=>"Balbuzard pêcheur",
+        "Bécasseau semipalmé"=>"Bécasseau semipalmé",
+        "Bernache cravant"=>"Bernache cravant",
+        "Bernache du Canada"=>"Bernache du Canada",
+        "Bruant de Lincoln"=>"Bruant de Lincoln",
+        "Bruant des prés"=>"Bruant des prés",
+        "Bruant familier"=>"Bruant familier",
+        "Bruant fauve"=>"Bruant fauve",
+        "Bruant hudsonien"=>"Bruant hudsonien",
+        "Busard St-Martin"=>"Busard St-Martin",
+        "Buse à queue rousse"=>"Buse à queue rousse",
+        "Buse pattue"=>"Buse pattue",
+        "Canard arlequin"=>"Canard arlequin",
+        "Canard colvert"=>"Canard colvert",
+        "Canard d'Amérique"=>"Canard d'Amérique",
+        "Canard noir"=>"Canard noir",
+        "Canard pilet"=>"Canard pilet",
+        "Chevalier grivelé"=>"Chevalier grivelé",
+        "Chevalier solitaire"=>"Chevalier solitaire",
+        "Cormorant à aigrette"=>"Cormorant à aigrette",
+        "Crécerelle d'Amérique"=>"Crécerelle d'Amérique",
+        "Eider à duvet"=>"Eider à duvet",
+        "Eider à tête grise"=>"Eider à tête grise",
+        "Épervier brun"=>"Épervier brun",
+        "Faucon émerillon"=>"Faucon émerillon",
+        "Faucon pèlerin"=>"Faucon pèlerin",
+        "Fou de Bassan"=>"Fou de Bassan",
+        "Fuligule à collier"=>"Fuligule à collier",
+        "Fuligule milouinan"=>"Fuligule milouinan",
+        "Garrot à œil d'or"=>"Garrot à œil d'or",
+        "Garrot d'Islande"=>"Garrot d'Islande",
+        "Gélinotte huppé"=>"Gélinotte huppé",
+        "Goéland à bec cerclé"=>"Goéland à bec cerclé",
+        "Goéland arctique"=>"Goéland arctique",
+        "Goéland argenté"=>"Goéland argenté",
+        "Goéland bourgmestre"=>"Goéland bourgmestre",
+        "Goéland marin"=>"Goéland marin",
+        "Grand Chevalier"=>"Grand Chevalier",
+        "Grand Corbeau"=>"Grand Corbeau",
+        "Grand Harle"=>"Grand Harle",
+        "Grand Heron"=>"Grand Heron",
+        "Grand Pic"=>"Grand Pic",
+        "Grèbe à bec bigarré"=>"Grèbe à bec bigarré",
+        "Grèbe jougris"=>"Grèbe jougris",
+        "Grive à dos olive"=>"Grive à dos olive",
+        "Grive fauve"=>"Grive fauve",
+        "Grive solitaire"=>"Grive solitaire",
+        "Gros-bec errant"=>"Gros-bec errant",
+        "Guillemot à miroir"=>"Guillemot à miroir",
+        "Harelde kakawi"=>"Harelde kakawi",
+        "Harle couronné"=>"Harle couronné",
+        "Harle huppé"=>"Harle huppé",
+        "Hirondelle rustique"=>"Hirondelle rustique",
+        "Jaseur boréal"=>"Jaseur boréal",
+        "Macareux moine"=>"Macareux moine",
+        "Macreuse à bec jaune"=>"Macreuse à bec jaune",
+        "Macreuse à front blanc"=>"Macreuse à front blanc",
+        "Macreuse brune"=>"Macreuse brune",
+        "Martin-pêcheur d'Amérique"=>"Martin-pêcheur d'Amérique",
+        "Merlebleu de l'Est"=>"Merlebleu de l'Est",
+        "Mésange à tête brune"=>"Mésange à tête brune",
+        "Mésangeai du Canada"=>"Mésangeai du Canada",
+        "Moqueur chat"=>"Moqueur chat",
+        "Moucherolle tchébec"=>"Moucherolle tchébec",
+        "Oie des neiges"=>"Oie des neiges",
+        "Paruline à calotte noire"=>"Paruline à calotte noire",
+        "Paruline à collier"=>"Paruline à collier",
+        "Paruline à gorge noire"=>"Paruline à gorge noire",
+        "Paruline à tête cendrée"=>"Paruline à tête cendrée",
+        "Paruline bleue"=>"Paruline bleue",
+        "Paruline des ruisseaux"=>"Paruline des ruisseaux",
+        "Paruline flamboyant"=>"Paruline flamboyant",
+        "Paruline jaune"=>"Paruline jaune",
+        "Paruline masquée"=>"Paruline masquée",
+        "Paruline noir et blanc"=>"Paruline noir et blanc",
+        "Paruline obscur"=>"Paruline obscur",
+        "Paruline tigrée"=>"Paruline tigrée",
+        "Petit Garrot"=>"Petit Garrot",
+        "Pic flamboyant"=>"Pic flamboyant",
+        "Pic maculé"=>"Pic maculé",
+        "Pic mineur"=>"Pic mineur",
+        "Pie-grièche grise"=>"Pie-grièche grise",
+        "Pigeon biset"=>"Pigeon biset",
+        "Pipit d'Amérique"=>"Pipit d'Amérique",
+        "Plectrophane des neiges"=>"Plectrophane des neiges",
+        "Plectrophane lapon"=>"Plectrophane lapon",
+        "Plongeon catmarin"=>"Plongeon catmarin",
+        "Plongeon huard"=>"Plongeon huard",
+        "Pluvier kildir"=>"Pluvier kildir",
+        "Pluvier semipalmé"=>"Pluvier semipalmé",
+        "Pypargue à tête blanche"=>"Pypargue à tête blanche",
+        "Roitelet à couronne dorée"=>"Roitelet à couronne dorée",
+        "Roitelet à couronne rubis"=>"Roitelet à couronne rubis",
+        "Roselin familier"=>"Roselin familier",
+        "Sarcelle à ailes bleues"=>"Sarcelle à ailes bleues",
+        "Sarcelle d'été"=>"Sarcelle d'été",
+        "Sarcelle d'hiver"=>"Sarcelle d'hiver",
+        "Sitelle à poitrine blanche"=>"Sitelle à poitrine blanche",
+        "Sitelle à poitrine rousse"=>"Sitelle à poitrine rousse",
+        "Sizerin blanchâtre"=>"Sizerin blanchâtre",
+        "Sizerin flammé"=>"Sizerin flammé",
+        "Tarin des pins"=>"Tarin des pins",
+        "Tohi à flancs roux"=>"Tohi à flancs roux",
+        "Troglodyte des forêts"=>"Troglodyte des forêts",
+        "Troglodyte familier"=>"Troglodyte familier",
+        "Urubu à tête rouge"=>"Urubu à tête rouge",
+        "Vacher à tête brune"=>"Vacher à tête brune",
+        "Viréo à tête bleue"=>"Viréo à tête bleue",
+        "Viréo aux yeux rouges"=>"Viréo aux yeux rouges",
+        ),
+),
 '#required' => TRUE,
 '#multiple' => TRUE,
 '#size' => 10,
@@ -764,7 +838,7 @@ $form['submit'] = array(
       ':input[name="espece"]' => array('!value' => 'Choisir'),
       ),
     ),
-      '#suffix' => '<div style="height:100px;"></div>',
+  '#suffix' => '<div style="height:100px;"></div>',
   );
 
 $module_path = base_path().drupal_get_path('module', 'nids');
@@ -797,12 +871,7 @@ function nids_obscour_form($form, &$form_state) {
   $form['duree_obs'] = array(
     '#type' => 'textfield',
     '#size' => 50,
-    '#title' => '<h4>'.t("Indiquer la durée de l'observation (en minutes)...").'</h4>',
-    '#states' => array(
-      'visible' => array(
-        ':input[name="rien_vu"]' => array('checked' => TRUE),
-        ),
-      ),
+    '#title' => '<h4>'.t("Indiquer la durée de la période d'observation (en minutes)...").'</h4>',
     );
 
   $form['oiseau'] = array(
@@ -828,145 +897,150 @@ function nids_obscour_form($form, &$form_state) {
   $form['oiseau']['espece'] = array(
     '#title' => t("Quelle espèce?"),
     '#type' => 'select',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="rien_vu"]' => array('checked' => TRUE),
+      ),
+    ),
     '#options' => array(
       "Espèces communes"=>array( //"--- Espèces communes ---",
-      "Bruant à couronne blanche"=>"Bruant à couronne blanche",
-      "Bruant à gorge blanche"=>"Bruant à gorge blanche",
-      "Bruant chanteur"=>"Bruant chanteur",
-      "Carouge à épaulette"=>"Carouge à épaulette",
-      "Chardonneret jaune"=>"Chardonneret jaune",
-      "Colibri à gorge rubis"=>"Colibri à gorge rubis",
-      "Corneille d'Amérique"=>"Corneille d'Amérique",
-      "Étourneau sansonnet"=>"Étourneau sansonnet",
-      "Geai bleu"=>"Geai bleu",
-      "Hirondelle bicolore"=>"Hirondelle bicolore",
-      "Jaseur d'Amérique"=>"Jaseur d'Amérique",
-      "Junco ardoisé"=>"Junco ardoisé",
-      "Merle d'Amérique"=>"Merle d'Amérique",
-      "Mésange à tête noire"=>"Mésange à tête noire",
-      "Moineau domestique"=>"Moineau domestique",
-      "Paruline è croupion jaune"=>"Paruline è croupion jaune",
-      "Pic chevelu"=>"Pic chevelu",
-      "Quiscale bronzé"=>"Quiscale bronzé",
-      "Roselin pourpré"=>"Roselin pourpré",
-      "Tourterelle triste"=>"Tourterelle triste",
-      ),
+        "Bruant à couronne blanche"=>"Bruant à couronne blanche",
+        "Bruant à gorge blanche"=>"Bruant à gorge blanche",
+        "Bruant chanteur"=>"Bruant chanteur",
+        "Carouge à épaulette"=>"Carouge à épaulette",
+        "Chardonneret jaune"=>"Chardonneret jaune",
+        "Colibri à gorge rubis"=>"Colibri à gorge rubis",
+        "Corneille d'Amérique"=>"Corneille d'Amérique",
+        "Étourneau sansonnet"=>"Étourneau sansonnet",
+        "Geai bleu"=>"Geai bleu",
+        "Hirondelle bicolore"=>"Hirondelle bicolore",
+        "Jaseur d'Amérique"=>"Jaseur d'Amérique",
+        "Junco ardoisé"=>"Junco ardoisé",
+        "Merle d'Amérique"=>"Merle d'Amérique",
+        "Mésange à tête noire"=>"Mésange à tête noire",
+        "Moineau domestique"=>"Moineau domestique",
+        "Paruline è croupion jaune"=>"Paruline è croupion jaune",
+        "Pic chevelu"=>"Pic chevelu",
+        "Quiscale bronzé"=>"Quiscale bronzé",
+        "Roselin pourpré"=>"Roselin pourpré",
+        "Tourterelle triste"=>"Tourterelle triste",
+        ),
       "Autres espèces"=>array(//"--- Autres espèces ---",
-      "Alouette hausse-col"=>"Alouette hausse-col",
-      "Autour des palombes"=>"Autour des palombes",
-      "Avocette d'Amérique"=>"Avocette d'Amérique",
-      "Balbuzard pêcheur"=>"Balbuzard pêcheur",
-      "Bécasseau semipalmé"=>"Bécasseau semipalmé",
-      "Bernache cravant"=>"Bernache cravant",
-      "Bernache du Canada"=>"Bernache du Canada",
-      "Bruant de Lincoln"=>"Bruant de Lincoln",
-      "Bruant des prés"=>"Bruant des prés",
-      "Bruant familier"=>"Bruant familier",
-      "Bruant fauve"=>"Bruant fauve",
-      "Bruant hudsonien"=>"Bruant hudsonien",
-      "Busard St-Martin"=>"Busard St-Martin",
-      "Buse à queue rousse"=>"Buse à queue rousse",
-      "Buse pattue"=>"Buse pattue",
-      "Canard arlequin"=>"Canard arlequin",
-      "Canard colvert"=>"Canard colvert",
-      "Canard d'Amérique"=>"Canard d'Amérique",
-      "Canard noir"=>"Canard noir",
-      "Canard pilet"=>"Canard pilet",
-      "Chevalier grivelé"=>"Chevalier grivelé",
-      "Chevalier solitaire"=>"Chevalier solitaire",
-      "Cormorant à aigrette"=>"Cormorant à aigrette",
-      "Crécerelle d'Amérique"=>"Crécerelle d'Amérique",
-      "Eider à duvet"=>"Eider à duvet",
-      "Eider à tête grise"=>"Eider à tête grise",
-      "Épervier brun"=>"Épervier brun",
-      "Faucon émerillon"=>"Faucon émerillon",
-      "Faucon pèlerin"=>"Faucon pèlerin",
-      "Fou de Bassan"=>"Fou de Bassan",
-      "Fuligule à collier"=>"Fuligule à collier",
-      "Fuligule milouinan"=>"Fuligule milouinan",
-      "Garrot à œil d'or"=>"Garrot à œil d'or",
-      "Garrot d'Islande"=>"Garrot d'Islande",
-      "Gélinotte huppé"=>"Gélinotte huppé",
-      "Goéland à bec cerclé"=>"Goéland à bec cerclé",
-      "Goéland arctique"=>"Goéland arctique",
-      "Goéland argenté"=>"Goéland argenté",
-      "Goéland bourgmestre"=>"Goéland bourgmestre",
-      "Goéland marin"=>"Goéland marin",
-      "Grand Chevalier"=>"Grand Chevalier",
-      "Grand Corbeau"=>"Grand Corbeau",
-      "Grand Harle"=>"Grand Harle",
-      "Grand Heron"=>"Grand Heron",
-      "Grand Pic"=>"Grand Pic",
-      "Grèbe à bec bigarré"=>"Grèbe à bec bigarré",
-      "Grèbe jougris"=>"Grèbe jougris",
-      "Grive à dos olive"=>"Grive à dos olive",
-      "Grive fauve"=>"Grive fauve",
-      "Grive solitaire"=>"Grive solitaire",
-      "Gros-bec errant"=>"Gros-bec errant",
-      "Guillemot à miroir"=>"Guillemot à miroir",
-      "Harelde kakawi"=>"Harelde kakawi",
-      "Harle couronné"=>"Harle couronné",
-      "Harle huppé"=>"Harle huppé",
-      "Hirondelle rustique"=>"Hirondelle rustique",
-      "Jaseur boréal"=>"Jaseur boréal",
-      "Macareux moine"=>"Macareux moine",
-      "Macreuse à bec jaune"=>"Macreuse à bec jaune",
-      "Macreuse à front blanc"=>"Macreuse à front blanc",
-      "Macreuse brune"=>"Macreuse brune",
-      "Martin-pêcheur d'Amérique"=>"Martin-pêcheur d'Amérique",
-      "Merlebleu de l'Est"=>"Merlebleu de l'Est",
-      "Mésange à tête brune"=>"Mésange à tête brune",
-      "Mésangeai du Canada"=>"Mésangeai du Canada",
-      "Moqueur chat"=>"Moqueur chat",
-      "Moucherolle tchébec"=>"Moucherolle tchébec",
-      "Oie des neiges"=>"Oie des neiges",
-      "Paruline à calotte noire"=>"Paruline à calotte noire",
-      "Paruline à collier"=>"Paruline à collier",
-      "Paruline à gorge noire"=>"Paruline à gorge noire",
-      "Paruline à tête cendrée"=>"Paruline à tête cendrée",
-      "Paruline bleue"=>"Paruline bleue",
-      "Paruline des ruisseaux"=>"Paruline des ruisseaux",
-      "Paruline flamboyant"=>"Paruline flamboyant",
-      "Paruline jaune"=>"Paruline jaune",
-      "Paruline masquée"=>"Paruline masquée",
-      "Paruline noir et blanc"=>"Paruline noir et blanc",
-      "Paruline obscur"=>"Paruline obscur",
-      "Paruline tigrée"=>"Paruline tigrée",
-      "Petit Garrot"=>"Petit Garrot",
-      "Pic flamboyant"=>"Pic flamboyant",
-      "Pic maculé"=>"Pic maculé",
-      "Pic mineur"=>"Pic mineur",
-      "Pie-grièche grise"=>"Pie-grièche grise",
-      "Pigeon biset"=>"Pigeon biset",
-      "Pipit d'Amérique"=>"Pipit d'Amérique",
-      "Plectrophane des neiges"=>"Plectrophane des neiges",
-      "Plectrophane lapon"=>"Plectrophane lapon",
-      "Plongeon catmarin"=>"Plongeon catmarin",
-      "Plongeon huard"=>"Plongeon huard",
-      "Pluvier kildir"=>"Pluvier kildir",
-      "Pluvier semipalmé"=>"Pluvier semipalmé",
-      "Pypargue à tête blanche"=>"Pypargue à tête blanche",
-      "Roitelet à couronne dorée"=>"Roitelet à couronne dorée",
-      "Roitelet à couronne rubis"=>"Roitelet à couronne rubis",
-      "Roselin familier"=>"Roselin familier",
-      "Sarcelle à ailes bleues"=>"Sarcelle à ailes bleues",
-      "Sarcelle d'été"=>"Sarcelle d'été",
-      "Sarcelle d'hiver"=>"Sarcelle d'hiver",
-      "Sitelle à poitrine blanche"=>"Sitelle à poitrine blanche",
-      "Sitelle à poitrine rousse"=>"Sitelle à poitrine rousse",
-      "Sizerin blanchâtre"=>"Sizerin blanchâtre",
-      "Sizerin flammé"=>"Sizerin flammé",
-      "Tarin des pins"=>"Tarin des pins",
-      "Tohi à flancs roux"=>"Tohi à flancs roux",
-      "Troglodyte des forêts"=>"Troglodyte des forêts",
-      "Troglodyte familier"=>"Troglodyte familier",
-      "Urubu à tête rouge"=>"Urubu à tête rouge",
-      "Vacher à tête brune"=>"Vacher à tête brune",
-      "Viréo à tête bleue"=>"Viréo à tête bleue",
-      "Viréo aux yeux rouges"=>"Viréo aux yeux rouges",
-      ),
-      ),
-'#required' => TRUE,
+        "Alouette hausse-col"=>"Alouette hausse-col",
+        "Autour des palombes"=>"Autour des palombes",
+        "Avocette d'Amérique"=>"Avocette d'Amérique",
+        "Balbuzard pêcheur"=>"Balbuzard pêcheur",
+        "Bécasseau semipalmé"=>"Bécasseau semipalmé",
+        "Bernache cravant"=>"Bernache cravant",
+        "Bernache du Canada"=>"Bernache du Canada",
+        "Bruant de Lincoln"=>"Bruant de Lincoln",
+        "Bruant des prés"=>"Bruant des prés",
+        "Bruant familier"=>"Bruant familier",
+        "Bruant fauve"=>"Bruant fauve",
+        "Bruant hudsonien"=>"Bruant hudsonien",
+        "Busard St-Martin"=>"Busard St-Martin",
+        "Buse à queue rousse"=>"Buse à queue rousse",
+        "Buse pattue"=>"Buse pattue",
+        "Canard arlequin"=>"Canard arlequin",
+        "Canard colvert"=>"Canard colvert",
+        "Canard d'Amérique"=>"Canard d'Amérique",
+        "Canard noir"=>"Canard noir",
+        "Canard pilet"=>"Canard pilet",
+        "Chevalier grivelé"=>"Chevalier grivelé",
+        "Chevalier solitaire"=>"Chevalier solitaire",
+        "Cormorant à aigrette"=>"Cormorant à aigrette",
+        "Crécerelle d'Amérique"=>"Crécerelle d'Amérique",
+        "Eider à duvet"=>"Eider à duvet",
+        "Eider à tête grise"=>"Eider à tête grise",
+        "Épervier brun"=>"Épervier brun",
+        "Faucon émerillon"=>"Faucon émerillon",
+        "Faucon pèlerin"=>"Faucon pèlerin",
+        "Fou de Bassan"=>"Fou de Bassan",
+        "Fuligule à collier"=>"Fuligule à collier",
+        "Fuligule milouinan"=>"Fuligule milouinan",
+        "Garrot à œil d'or"=>"Garrot à œil d'or",
+        "Garrot d'Islande"=>"Garrot d'Islande",
+        "Gélinotte huppé"=>"Gélinotte huppé",
+        "Goéland à bec cerclé"=>"Goéland à bec cerclé",
+        "Goéland arctique"=>"Goéland arctique",
+        "Goéland argenté"=>"Goéland argenté",
+        "Goéland bourgmestre"=>"Goéland bourgmestre",
+        "Goéland marin"=>"Goéland marin",
+        "Grand Chevalier"=>"Grand Chevalier",
+        "Grand Corbeau"=>"Grand Corbeau",
+        "Grand Harle"=>"Grand Harle",
+        "Grand Heron"=>"Grand Heron",
+        "Grand Pic"=>"Grand Pic",
+        "Grèbe à bec bigarré"=>"Grèbe à bec bigarré",
+        "Grèbe jougris"=>"Grèbe jougris",
+        "Grive à dos olive"=>"Grive à dos olive",
+        "Grive fauve"=>"Grive fauve",
+        "Grive solitaire"=>"Grive solitaire",
+        "Gros-bec errant"=>"Gros-bec errant",
+        "Guillemot à miroir"=>"Guillemot à miroir",
+        "Harelde kakawi"=>"Harelde kakawi",
+        "Harle couronné"=>"Harle couronné",
+        "Harle huppé"=>"Harle huppé",
+        "Hirondelle rustique"=>"Hirondelle rustique",
+        "Jaseur boréal"=>"Jaseur boréal",
+        "Macareux moine"=>"Macareux moine",
+        "Macreuse à bec jaune"=>"Macreuse à bec jaune",
+        "Macreuse à front blanc"=>"Macreuse à front blanc",
+        "Macreuse brune"=>"Macreuse brune",
+        "Martin-pêcheur d'Amérique"=>"Martin-pêcheur d'Amérique",
+        "Merlebleu de l'Est"=>"Merlebleu de l'Est",
+        "Mésange à tête brune"=>"Mésange à tête brune",
+        "Mésangeai du Canada"=>"Mésangeai du Canada",
+        "Moqueur chat"=>"Moqueur chat",
+        "Moucherolle tchébec"=>"Moucherolle tchébec",
+        "Oie des neiges"=>"Oie des neiges",
+        "Paruline à calotte noire"=>"Paruline à calotte noire",
+        "Paruline à collier"=>"Paruline à collier",
+        "Paruline à gorge noire"=>"Paruline à gorge noire",
+        "Paruline à tête cendrée"=>"Paruline à tête cendrée",
+        "Paruline bleue"=>"Paruline bleue",
+        "Paruline des ruisseaux"=>"Paruline des ruisseaux",
+        "Paruline flamboyant"=>"Paruline flamboyant",
+        "Paruline jaune"=>"Paruline jaune",
+        "Paruline masquée"=>"Paruline masquée",
+        "Paruline noir et blanc"=>"Paruline noir et blanc",
+        "Paruline obscur"=>"Paruline obscur",
+        "Paruline tigrée"=>"Paruline tigrée",
+        "Petit Garrot"=>"Petit Garrot",
+        "Pic flamboyant"=>"Pic flamboyant",
+        "Pic maculé"=>"Pic maculé",
+        "Pic mineur"=>"Pic mineur",
+        "Pie-grièche grise"=>"Pie-grièche grise",
+        "Pigeon biset"=>"Pigeon biset",
+        "Pipit d'Amérique"=>"Pipit d'Amérique",
+        "Plectrophane des neiges"=>"Plectrophane des neiges",
+        "Plectrophane lapon"=>"Plectrophane lapon",
+        "Plongeon catmarin"=>"Plongeon catmarin",
+        "Plongeon huard"=>"Plongeon huard",
+        "Pluvier kildir"=>"Pluvier kildir",
+        "Pluvier semipalmé"=>"Pluvier semipalmé",
+        "Pypargue à tête blanche"=>"Pypargue à tête blanche",
+        "Roitelet à couronne dorée"=>"Roitelet à couronne dorée",
+        "Roitelet à couronne rubis"=>"Roitelet à couronne rubis",
+        "Roselin familier"=>"Roselin familier",
+        "Sarcelle à ailes bleues"=>"Sarcelle à ailes bleues",
+        "Sarcelle d'été"=>"Sarcelle d'été",
+        "Sarcelle d'hiver"=>"Sarcelle d'hiver",
+        "Sitelle à poitrine blanche"=>"Sitelle à poitrine blanche",
+        "Sitelle à poitrine rousse"=>"Sitelle à poitrine rousse",
+        "Sizerin blanchâtre"=>"Sizerin blanchâtre",
+        "Sizerin flammé"=>"Sizerin flammé",
+        "Tarin des pins"=>"Tarin des pins",
+        "Tohi à flancs roux"=>"Tohi à flancs roux",
+        "Troglodyte des forêts"=>"Troglodyte des forêts",
+        "Troglodyte familier"=>"Troglodyte familier",
+        "Urubu à tête rouge"=>"Urubu à tête rouge",
+        "Vacher à tête brune"=>"Vacher à tête brune",
+        "Viréo à tête bleue"=>"Viréo à tête bleue",
+        "Viréo aux yeux rouges"=>"Viréo aux yeux rouges",
+        ),
+),
+'#required' => FALSE,
 '#multiple' => TRUE,
 '#size' => 10,
 '#default_value' => 'Choisir',
@@ -982,6 +1056,7 @@ $form['oiseau']['nombre_individus'] = array(
   '#states' => array(
     'visible' => array(
       ':input[name="espece"]' => array('!value' => 'Choisir'),
+      ':input[name="rien_vu"]' => array('checked' => TRUE),
       ),
     ),
   );
@@ -992,6 +1067,7 @@ $form['ajout_espece'] = array(
   '#states' => array(
     'visible' => array(
       ':input[name="espece"]' => array('!value' => 'Choisir'),
+       ':input[name="rien_vu"]' => array('checked' => TRUE),
       ),
     ),
   '#executes_submit_callback' => FALSE,
@@ -1005,26 +1081,44 @@ $form['ajout_espece'] = array(
 
 
 
+$form['submit'] = array(
+  '#type' => 'submit',
+  '#value' => t("Ajouter l'observation!"),
+  '#suffix' => '<div style="height:100px;"></div>',
+  );
 
+$module_path = base_path().drupal_get_path('module', 'nids');
 
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t("Ajouter l'observation!"),
-    '#suffix' => '<div style="height:100px;"></div>',
-    );
-
-  $module_path = base_path().drupal_get_path('module', 'nids');
-
-  $js_files = array(
-    $module_path . '/javascript/nids.jqueryui.js',
-    $module_path . '/javascript/selectboxit.js',
-    );
-  $form['#attached']['js'] = $js_files;
-  $form['#validate'][] = 'cour_form_validate';
-  $form['#submit'][] = 'cour_form_submit';
-  return $form;
+$js_files = array(
+  $module_path . '/javascript/nids.jqueryui.js',
+  $module_path . '/javascript/selectboxit.js',
+  );
+$form['#attached']['js'] = $js_files;
+$form['#validate'][] = 'cour_form_validate';
+$form['#submit'][] = 'cour_form_submit';
+return $form;
 }
 
+
+
+function nids_user_insert(&$edit, $account, $category) {
+  db_insert('nids_users')->fields(array(
+    'uid' => $account->uid,
+    'nom_famille' => $edit['nom_famille'],
+    'prenom' => $edit['prenom'],
+    'ecole' => $edit['ecole'],
+    'adresse' => $edit['adresse_civique'],
+    'appartement' => $edit['adresse_appt'],
+    'ville' => $edit['adresse_ville'],
+    'code_postal' => $edit['adresse_code_postal'],
+    'telephone' => $edit['telephone'],
+    ))->execute();
+  db_insert('users_roles')->fields(array(
+    'uid' => $account->uid,
+    'rid' => $edit['type_utilisateur'],
+    ))->execute();
+
+}
 
 
 // Form validation handler.

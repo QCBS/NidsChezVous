@@ -5,51 +5,70 @@
  */
 
 function nids_schema() {
-  /*$schema = array();
-  $schema['nids_observations'] = array(
-    'description' => 'The base table for metadata datasets.',
+  $schema = array();
+  $schema['nids_users'] = array(
+    'description' => 'Des nids chez vous users data.',
     'fields' => array(
-      'mid' => array(
-        'description' => 'The primary identifier for a metadata dataset entry.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE),
-      'nid' => array(
-        'description' => 'The foreign key for the node',
+      'uid' => array(
+        'description' => 'The foreign user key',
         'type' => 'int',
         'not null' => TRUE),
-       'dataset_name' => array(
-        'description' => 'The name of the dataset',
+      'prenom' => array(
+        'description' => 'Prénom',
         'type' => 'varchar',
         'length' => 255),
-      'dataset_description' => array(
-        'description' => 'The description of the dataset.',
-        'type' => 'text'),
+      'nom_famille' => array(
+        'description' => 'Nom de famille',
+        'type' => 'varchar',
+        'length' => 255),
+      'ecole' => array(
+        'description' => 'Téléphone',
+        'type' => 'varchar',
+        'length' => 50),
+      'adresse' => array(
+        'description' => 'Adresse',
+        'type' => 'varchar',
+        'length' => 255),
+      'appartement' => array(
+        'description' => 'Appartement',
+        'type' => 'varchar',
+        'length' => 255),
+      'telephone' => array(
+        'description' => 'Téléphone',
+        'type' => 'varchar',
+        'length' => 30),
+      'ville' => array(
+        'description' => 'Ville',
+        'type' => 'varchar',
+        'length' => 255),
+      'code_postal' => array(
+        'description' => 'Code postal',
+        'type' => 'varchar',
+        'length' => 8),
     ),
       'indexes' => array(
-        'node_dataset' => array('nid')
+        'node_dataset' => array('uid')
       ),
       'foreign keys' => array(
-        'node' => array(
-          'table' => 'node',
-          'columns' => array('nid' => 'nid'),
+        'users' => array(
+          'table' => 'users',
+          'columns' => array('uid' => 'uid'),
          )
       ),
-      'primary key' => array('mid'),
+      'primary key' => array('uid'),
   );
   return $schema;
-  */
 }
 
 /**
  * Implements hook_uninstall().
  */
 function nids_uninstall() {
+  db_drop_table('nids_users');
   /*$results = db_select('node', 'n')->fields('n', array('nid'))->condition('type', 'nids' ,'=')->execute()->fetchAll();
   foreach($results as $result) {
     node_delete($result->nid);
   }
-  db_drop_table('nids_dataset');
   node_types_rebuild();
   menu_rebuild();
   */

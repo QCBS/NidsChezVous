@@ -8,6 +8,7 @@
     geography: "",
 
     attach: function() {
+      this.addByName();
       this.geography = $("input[name='geography']");
       this.createMap();
       this.readGeoJSON();
@@ -303,10 +304,11 @@
       var self = this;
       var geocoder;
       geocoder = new google.maps.Geocoder();
-      locname=$("input[name='location_name']").val();
+      locname = $("#adresse").text();
+      //locname=$("input[name='location_name']").val();
       suffix='Quebec';
       if(locname.indexOf(suffix, locname.length - suffix.length) == -1) {
-        locname=locname + 'Quebec';
+        locname=locname + ' Quebec';
       }
       self.geocodePosition(locname,geocoder);
     },
@@ -318,6 +320,7 @@
           $('#noloc').hide();
           self.addMarker(results[0].geometry.location);
           self.map.setCenter(results[0].geometry.location);
+          self.map.setZoom(16);
         } else {
           $('#noloc').show(); 
         }
