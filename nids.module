@@ -134,13 +134,13 @@ function nids_menu() {
     'title'           => t('Ajouter un nichoir'),
     'description'     => t('Ajouter un nichoir'),
     'menu_name'       => 'main-menu',
-    'access arguments' => array('access content'),
+    'access arguments' => array('edit own content'),
     'weight'          => 5,
     'access callback' => 'user_access',
     'page callback' => 'ajout_nichoir_callback',
     'type' => MENU_NORMAL_ITEM,
     );
-
+    
   $items['inscription'] = array(
     'title'           => t("S'inscrire"),
     'description'     => t('Inscription'),
@@ -375,8 +375,8 @@ return $form;
     '#states' => array(
       'visible' => array(
         ':input[name="type_utilisateur"]' => array(
-          array('value' => 'enfant'),
-          array('value' => 'representant_scolaire'),
+          array('value' => 4),
+          array('value' => 5),
           ),
         ),
       ),
@@ -410,6 +410,9 @@ return $form;
     '#default_value' => '',
     '#size'=> 30,
     '#tree' =>FALSE,
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="type_utilisateur"]' => array('value' => 5))),
     );
   $form['adresse']['adresse_civique'] = array(
     '#title' => t("Numéro civique et rue (ex. 145 rue Chambord)"),
@@ -439,6 +442,27 @@ return $form;
     '#default_value' => '',
     '#size'=> 30,
     );
+    
+  $form['feedQuestion'] = array(
+    '#title' => t("Est-ce que vous avez une mangeoire pour les oiseaux dans votre cour?"),
+    '#type' => 'select',
+    '#options' => array( 
+    1 => 'Oui', 
+    2 => 'Non',
+    ),
+    '#required' => FALSE,
+    );
+    
+  $form['birdFeedNum'] = array(
+    '#type' => 'textfield',
+    '#required' => FALSE,
+    '#default_value' => '',
+    '#size'=> 30,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="feedQuestion"]' => array('value' => 1))),
+    );
+    
   return $form;
 }
 }
@@ -511,6 +535,7 @@ function nids_obsnichoir_form($form, &$form_state) {
       'Mésange à tête noire' => 'Mésange à tête noire',
       'Mésange brune' => 'Mésange brune',
       'Sitelle à poitrine rousse' => 'Sitelle à poitrine rousse',
+      'Merlebleu de l\'Est' => 'Merlebleu de l\'Est',
       'Inconnue' => 'Inconnue',
       'Autre' => 'Autre'
       ),
@@ -548,9 +573,8 @@ function nids_obsnichoir_form($form, &$form_state) {
       4 => t('Sons de poussins, quémande alimentaire'),
       5 => t('Alimentation des poussins par les parents (bec avec des chenilles, etc.)'),
       6 => t('Oiseau chante sur ou proche du nichoir'),
-      7 => t('Indiquer un nombre de visites au nichoir pendant 5 minutes'),
-      8 => t('Les oiseaux semblent avoir abandonné le nid'),
-      9 => t('Autre'),
+      7 => t('Les oiseaux semblent avoir abandonné le nid'),
+      8 => t('Autre'),
       ),
     '#states' => array(
       'visible' => array(
@@ -571,19 +595,18 @@ function nids_obsnichoir_form($form, &$form_state) {
         ),
       ),
     );
-  /*
+  
   $form['nombre_visite'] = array(
     '#type' => 'textfield',
     '#size' => 70,
-    '#title' => '<h4>'.t("Indiquer le nombre de visites au nichoir enregistrées pendant une période de 5 minutes...").'</h4>',
+    '#title' => '<h4>'.t("Qu'avez-vous vu?").'</h4>',
     '#states' => array(
       'visible' => array(
-        ':input[name="type_obs"]' => array('value' => 9),
+        ':input[name="type_obs"]' => array('value' => 8),
         ':input[name="esp"]' => array('!value' => 'Choisir'),
         ),
       ),
     );
-*/
 $form['submit'] = array(
   '#type' => 'submit',
   '#value' => t("Ajouter l'observation!"),
