@@ -6,6 +6,42 @@
 
 function nids_schema() {
   $schema = array();
+  // Moes' work begins here
+  	$schema['oiseaux_observer_dans_ta_cour'] = array(
+	'description' => 'oiseaux observer dans ta cour',
+	'fields' => array(
+		'date' => array(
+		'description' => 'Date et heure de l\'observation',
+		'type' => 'datetime',
+		'not null' => FALSE,
+		),
+		'rien_vu' => array(
+		'description' => 'Je n\'ai rien vu',
+		'type' => 'int',
+		'size' => 'tiny',
+		'not null' => FALSE,
+		),
+		'duree_obs' => array(
+		'description' => 'Indiquer la durée de la période d\'observation (en minutes)',
+		'type' => 'int',
+		'not null' => FALSE,
+		),
+		'oiseau_espece' => array(
+		'description' => 'Quelle espece',
+		'type' => 'set',
+		'not null' => FALSE,
+		),
+		'nombre_individus' => array(
+		'description' => 'Indiquer le nombre maximal d\'individus observés (approximatif pour les grands nombres)',
+		'type' => 'int',
+		'not null' => FALSE,
+    ),
+  ),
+);
+
+	// Moes' work ends here
+  
+  
   $schema['nids_users'] = array(
     'description' => 'Des nids chez vous users data.',
     'fields' => array(
@@ -57,6 +93,60 @@ function nids_schema() {
       ),
       'primary key' => array('uid'),
   );
+  $schema['nids_nichoirs'] = array(
+    'description' => 'Des nids chez vous users data.',
+    'fields' => array(
+      'nid_id' => array(
+        'description' => 'ID unique pour chaque nichoir',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'Foreign user key',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'dncv' => array(
+        'description' => 'Est-ce un nichoir DNCV?',
+        'type' => 'int',
+      ),
+      'dncv_no' => array(
+        'description' => 'Numéro du nichoir DNCV',
+        'type' => 'int',
+      ),
+      'nom_nichoir' => array(
+        'description' => 'Nom du nichoir',
+        'type' => 'varchar',
+        'length' => 50,
+      ),
+      'geography' => array(
+        'description' => 'GeoJSON with coordinate information',
+        'type' => 'text',
+      ),
+      'date_installation' => array(
+        'description' => "Date d'installation",
+        'type' => 'varchar',
+        'length'=> '15',
+      ),
+      'habitat' => array(
+        'description' => "Habitat",
+        'type' => 'varchar',
+        'length'=> '50',
+      ),
+      'hauteur' => array(
+        'description' => "Hauteur du nichoir",
+        'type' => 'float',
+      ),
+      'orientation' => array(
+        'description' => "Orientation du nichoir",
+        'type' => 'varchar',
+        'length'=> '15',
+      ),
+
+    ),
+  );
   return $schema;
 }
 
@@ -65,6 +155,13 @@ function nids_schema() {
  */
 function nids_uninstall() {
   db_drop_table('nids_users');
+  db_drop_table('nids_nichoirs');
+  
+  //**************************************************************
+  //db_drop_table('oiseaux_observer_dans_ta_cour');
+  // Not sure about this "From: Moe"
+  //**************************************************************
+  
   /*$results = db_select('node', 'n')->fields('n', array('nid'))->condition('type', 'nids' ,'=')->execute()->fetchAll();
   foreach($results as $result) {
     node_delete($result->nid);
