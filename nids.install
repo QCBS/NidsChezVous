@@ -156,12 +156,15 @@ function nids_schema() {
 function nids_uninstall() {
   db_drop_table('nids_users');
   db_drop_table('nids_nichoirs');
+<<<<<<< HEAD
   
   //**************************************************************
   //db_drop_table('oiseaux_observer_dans_ta_cour');
   // Not sure about this "From: Moe"
   //**************************************************************
   
+=======
+>>>>>>> b998608193f0baeb3c4429f6f546fe64077021a3
   /*$results = db_select('node', 'n')->fields('n', array('nid'))->condition('type', 'nids' ,'=')->execute()->fetchAll();
   foreach($results as $result) {
     node_delete($result->nid);

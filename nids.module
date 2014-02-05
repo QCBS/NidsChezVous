@@ -87,7 +87,7 @@ function nids_menu() {
     'type' => MENU_NORMAL_ITEM,
     );
 
-  $items['mangeoire_parc'] = array(
+ /* $items['mangeoire_parc'] = array(
     'title'           => t('Dans une mangeoire dans un parc'),
     'description'     => t('Dans une mangeoire dans un parc'),
     'menu_name'       => 'quastuvu3',
@@ -97,6 +97,8 @@ function nids_menu() {
     'page callback' => 'mangeoire_callback',
     'type' => MENU_NORMAL_ITEM,
     );
+    */
+/*
   $items['mangeoire'] = array(
     'title'           => t('Dans ta mangeoire'),
     'description'     => t('Dans ta mangeoire'),
@@ -107,7 +109,7 @@ function nids_menu() {
     'page callback' => 'mangeoire_callback',
     'type' => MENU_NORMAL_ITEM,
     );
-
+*/
   $items['cour_obs'] = array(
     'title'           => t('Oiseau observé dans ta cour'),
     'description'     => t('Dans ta cour'),
@@ -123,7 +125,7 @@ function nids_menu() {
     'title'           => t('Ajouter une observation'),
     'description'     => t('Dans ta cour'),
     'menu_name'       => 'main-menu',
-    'access arguments' => array('access content'),
+    'access arguments' => array('create nichoir content'),
     'weight'          => 7,
     'access callback' => 'user_access',
     'page callback' => 'quastuvu1_callback',
@@ -134,7 +136,7 @@ function nids_menu() {
     'title'           => t('Ajouter un nichoir'),
     'description'     => t('Ajouter un nichoir'),
     'menu_name'       => 'main-menu',
-    'access arguments' => array('edit own content'),
+    'access arguments' => array('create nichoir content'),
     'weight'          => 5,
     'access callback' => 'user_access',
     'page callback' => 'ajout_nichoir_callback',
@@ -158,7 +160,6 @@ function nids_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     );
-
 
   return $items;
 }
@@ -198,20 +199,20 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
       '#required' => TRUE,
       '#default_value' => '',
       '#options' => array(
-        'Oui' => 'Oui',
-        'Non' => 'Non',
+        1 => 'Oui',
+        0 => 'Non',
       ),
     );
 
     $form['numero'] = array(
       '#title' => t("Quel est le numéro du nichoir?"),
       '#type' => 'textfield',
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#size' => 15,
       '#default_value' => '',
       '#states' => array(
         'visible' => array(
-          ':input[name="dncv"]' => array('value' => 'Oui')
+          ':input[name="dncv"]' => array('value' => 1)
         ),
       ),
     );
@@ -281,13 +282,13 @@ $form['date'] = array(
   '#date_format' => 'Y-m-d',
   '#size' => 30,
   '#title' => "Date de l'installation du nichoir",
-  '#required' => TRUE,
+  '#required' => FALSE,
   );
 
 $form['habitat'] = array(
   '#title' => t("Le nichoir est fixé à..."),
   '#type' => 'select',
-  '#required' => TRUE,
+  '#required' => FALSE,
   '#default_value' => '',
   '#options' => array(
     'choisir' => 'Choisir...',
@@ -301,7 +302,7 @@ $form['habitat'] = array(
 $form['hauteur'] = array(
   '#title' => t("À quelle hauteur est situé le nichoir (en mètres)?"),
   '#type' => 'textfield',
-  '#required' => TRUE,
+  '#required' => FALSE,
   '#default_value' => '',
   '#size'=> 30,
   );
@@ -321,7 +322,7 @@ $form['orientation'] = array(
     'Sud_ouest' => 'Sud-Ouest',
     'Inconnue' => 'Inconnue',
     ),
-  '#required' => TRUE,
+  '#required' => FALSE,
   '#default_value' => 'Choisir',
   );
 
@@ -443,8 +444,8 @@ return $form;
     '#size'=> 30,
     );
     
-  $form['feedQuestion'] = array(
-    '#title' => t("Est-ce que vous avez une mangeoire pour les oiseaux dans votre cour?"),
+  $form['mangeoire'] = array(
+    '#title' => t("Est-ce que vous avez une/des mangeoire(s) pour les oiseaux dans votre cour?"),
     '#type' => 'select',
     '#options' => array( 
     1 => 'Oui', 
@@ -453,16 +454,25 @@ return $form;
     '#required' => FALSE,
     );
     
-  $form['birdFeedNum'] = array(
+  $form['mangeoires_nombre'] = array(
+    '#title' => t("Combien de mangeoires avez-vous?"),
     '#type' => 'textfield',
     '#required' => FALSE,
     '#default_value' => '',
     '#size'=> 30,
     '#states' => array(
       'visible' => array(
-        ':input[name="feedQuestion"]' => array('value' => 1))),
+        ':input[name="mangeoire"]' => array('value' => 1))),
     );
     
+  $form['valider'] = array(
+    '#title' => t("Question de vérification: "),
+    '#type' => 'textfield',
+    '#required' => FALSE,
+    '#default_value' => '',
+    '#size'=> 30,
+   );
+
   return $form;
 }
 }
@@ -1146,20 +1156,25 @@ function nids_user_insert(&$edit, $account, $category) {
 
 // Form validation handler.
 function nichoir_form_validate($form, &$form_state) {
-  //do validation here if necessary
+     if (is_numeric($form_state['values']['hauteur'])==false & $form_state['values']['hauteur']!='') {
+      form_set_error('hauteur', t('Veuillez entrer un chiffre pour la hauteur!'));
+    }
 }
 
 // Form submit handler.
 function nichoir_form_submit($form, &$form_state) {
-}
-
-// Form validation handler.
-function mangeoire_form_validate($form, &$form_state) {
-  //do validation here if necessary
-}
-
-// Form submit handler.
-function mangeoire_form_submit($form, &$form_state) {
+    global $user; 
+    db_insert('nids_nichoirs')->fields(array(
+    'uid' => $user->uid,
+    'dncv' => $form_state['values']['dncv'],
+    'dncv_no' => ($form_state['values']['numero']=='')?null:$form_state['values']['numero'],
+    'nom_nichoir' => $form_state['values']['nom_nichoir'],
+    'geography' => $form_state['values']['geography'],
+    'date_installation' => $form_state['values']['date'],
+    'habitat' => $form_state['values']['habitat'],
+    'hauteur' => ($form_state['values']['hauteur']=='')?null:$form_state['values']['hauteur'],
+    'orientation' => $form_state['values']['orientation'],
+    ))->execute();
 }
 
 // Form validation handler.
