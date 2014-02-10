@@ -1028,6 +1028,37 @@ function nids_block_info() {
  * Implements hook_block_view().
  */
 function nids_block_view($block_name = '') {
+
+/********************************************************************
+if ($block_name == 'nids_datasets') {
+    $query=db_select('nids_dataset', 't')
+    -> fields('t', array('nid', 'dataset_name','dataset_description'));
+    $result = $query->execute();
+    $header = array(t('Dataset name'),t('Last modified'),t(''));
+    $rows = array();
+
+    foreach ($result as $node) {
+      $isnode = node_load($node->nid);
+      $options = array('absolute' => TRUE);
+      $changed = db_select('node', 'n')->fields('n', array('changed'))->condition('nid',$node->nid,'=')->execute()->fetchField();
+      $url = url('node/' . $node->nid, $options);
+      if(node_access('update',$node->nid)){
+          $edit='<a href='.$url.'/edit>Edit</a>';
+      }else{
+        $edit='';
+      }
+      $rows[] = array('<a href='.$url.'>'.$node->dataset_name.'</a>',gmdate("Y-m-d",$changed),$edit);
+    }
+
+    //Return the content of the block
+    $content=theme('table', array('header' => $header, 'rows' => $rows));
+    $block = array(
+      'subject' => t('List of nids datasets'),
+      'content' => $content,
+    );
+    return $block;
+  }
+********************************************************************/
 }
 
 function quastuvu1_callback(){
