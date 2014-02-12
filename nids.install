@@ -90,6 +90,12 @@ $schema['nids_nichoirs'] = array(
       'type' => 'varchar',
       'length'=> '255',
     ),
+    'ecole' => array(
+      'description' => 'Nom de l\'école si le nichoir est dans une cour d\'école',
+      'type' => 'varchar',
+      'length'=> '255',
+    ),
+
     'geography' => array(
       'description' => 'GeoJSON with coordinate information',
       'type' => 'text',
@@ -164,6 +170,54 @@ $schema['nids_oiseaux_cour'] = array(
 );
 
   // Moes' work ends here
+
+$schema['nids_nichoirs_obs'] = array(
+  'description' => 'observations dans les nichoirs',
+  'fields' => array(
+    'obs_id' => array(
+      'description' => 'ID unique pour l\'observation',
+      'type' => 'serial',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      ),
+    'uid' => array(
+      'description' => 'User id',
+      'type' => 'int',
+      'not null' => TRUE,
+      ),
+    'date_obs' => array(
+      'description' => 'Date de l\'observation',
+      'type' => 'varchar',
+      'length'=> '50',
+      'not null' => FALSE,
+      ),
+    'rien_vu' => array(
+      'description' => 'Je n\'ai rien vu',
+      'type' => 'int',
+      'not null' => FALSE,
+      ),
+    'duree_obs' => array(
+      'description' => 'Indiquer la durée de la période d\'observation (en minutes)',
+      'type' => 'int',
+      'not null' => FALSE,
+      ),
+    'oiseau_espece' => array(
+      'description' => 'Quelle espece',
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+      ),
+    'nombre_individus' => array(
+      'description' => 'Indiquer le nombre maximal d\'individus observés (approximatif pour les grands nombres)',
+      'type' => 'int',
+      'not null' => FALSE,
+      ),
+    ),
+'primary key' => array('obs_id'),
+);
+
+
+
 
 return $schema;
 }

@@ -52,7 +52,7 @@ function nids_menu() {
     'access arguments' => array('access content'),
     'weight'          => 3,
     'access callback' => 'user_access',
-    'page callback' => 'nichoir_parc_callback',
+    'page callback' => 'nichoir_callback',
     'type' => MENU_NORMAL_ITEM,
     );
   $items['ecole'] = array(
@@ -62,9 +62,32 @@ function nids_menu() {
     'access arguments' => array('access content'),
     'weight'          => 3,
     'access callback' => 'user_access',
+    'page callback' => 'ecole_callback',
+    'type' => MENU_NORMAL_ITEM,
+    );
+
+  $items['nichoir_ecole'] = array(
+    'title'           => t('Dans un nichoir dans une cour d\'école'),
+    'description'     => t('Dans un nichoir dans une cour d\'école'),
+    'menu_name'       => 'quastuvu5',
+    'access arguments' => array('access content'),
+    'weight'          => 4,
+    'access callback' => 'user_access',
     'page callback' => 'nichoir_callback',
     'type' => MENU_NORMAL_ITEM,
     );
+
+  $items['ecole_obs'] = array(
+    'title'           => t('Oiseau(x) observé(s) dans la cour d\'une école'),
+    'description'     => t('Oiseau(x) observé(s) dans la cour d\'une école'),
+    'menu_name'       => 'quastuvu5',
+    'access arguments' => array('access content'),
+    'weight'          => 4,
+    'access callback' => 'user_access',
+    'page callback' => 'cour_callback',
+    'type' => MENU_NORMAL_ITEM,
+    );
+
 
   $items['nichoir'] = array(
     'title'           => t('Dans ton nichoir'),
@@ -88,7 +111,7 @@ function nids_menu() {
     );
 
   $items['cour_obs'] = array(
-    'title'           => t('Oiseau observé dans ta cour'),
+    'title'           => t('Oiseau(x) observé(s) dans ta cour'),
     'description'     => t('Dans ta cour'),
     'menu_name'       => 'quastuvu2',
     'access arguments' => array('access content'),
@@ -203,6 +226,65 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
       );
 
 
+  $form['dans_un_parc'] = array(
+    '#title' => t("Est-ce un nichoir dans un parc?"),
+    '#type' => 'select',
+    '#options' => array( 
+      1 => 'Oui', 
+      0 => 'Non',
+      ),
+    '#required' => FALSE,
+    '#default_value' => 0,
+    );
+  $form['parc'] = array(
+    '#title' => t("Pour quel parc?"),
+    '#type' => 'select',
+    '#options' => array(
+      null => 'Choisir...',
+      'Lepage' => 'Lepage',
+      'Beauséjour' => 'Beauséjour',
+      'La gare' => 'La gare',
+      'Mont-Saint-Louis' => 'Mont-Saint Louis',
+      'Mairie Saint-Anaclet' => 'Mairie Saint-Anaclet',
+      ),
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="dans_un_parc"]' => array('value' => 1),
+        )
+      ),
+    '#default_value' => null,
+    );
+
+    $form['a_une_ecole'] = array(
+    '#title' => t("Est-ce un nichoir dans une cour d'école?"),
+    '#type' => 'select',
+    '#options' => array( 
+      1 => 'Oui', 
+      0 => 'Non',
+      ),
+    '#required' => FALSE,
+    '#default_value' => 0,
+    );
+  $form['ecole'] = array(
+    '#title' => t("Nom de l'école"),
+    '#type' => 'select',
+    '#options' => array(
+      'Choisir' => 'Choisir...',
+      'École Rose des Vents' => 'École Rose des Vents',
+      'École des Sources' => 'École des Sources',
+      'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
+      'École Mont Saint-Louis' => 'École Mont Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      ),
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="a_une_ecole"]' => array('value' => 1),
+        )
+      ),
+    );
+
     $form['geo'] = array(
       '#title' => t(''),
       '#type' => 'fieldset',
@@ -241,12 +323,14 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
       '#size' => 200,
       '#required' => FALSE,
       '#default_value' => isset($form['#node']->nichoir['site_details']['geography']) ? $form['#node']->nichoir['site_details']['geography'] : "",
-      '#suffix' => '<h3>'.t('<strong>ou</strong>, si vous les connaissez, ajouter les coordonnées géographiques du nichoir en format latitude, longitude dans cette boîte (e.g. 48.3732, -68.7041).</h3>').'
+      /*'#suffix' => '<h3>'.t('<strong>ou</strong>, si vous les connaissez, ajouter les coordonnées géographiques du nichoir en format latitude, longitude dans cette boîte (e.g. 48.3732, -68.7041).</h3>').'
       <br><input type="text" id="inputcoords" style="display:inline;width:200px;">
       <button type="button" id="inputcoordsbut" class="nids-button" style="display:inline;" >'.t('Ajouter un marqueur à ces coordonnées sur la carte').'</button>
       <div id="coorderror" style="display:none;">'.t('Coordonnées non reconnues!').'</div>
     </p>',
+    */
     '#prefix' => '<h3>'.t('Situe le nichoir en déplacant le marqueur rouge sur la carte').'</h3><div id="map" style="width:700px;height:500px;"></div></div>',
+    
     /*<p><button type="button" id="pointbut">'.t('Ajoute un nichoir en cliquant sur la carte').'</button>
     <button type="button" id="nids-clear">'.t('Effacer').'</button>
   </p>*/
@@ -458,7 +542,7 @@ function nids_obsnichoir_form($form, &$form_state) {
 
   $path=drupal_get_path_alias(current_path());
   
-  $form['parc_check'] = array(
+  $form['parc_ecole_check'] = array(
     '#type' => 'hidden',
     '#default_value' => $path,
     );
@@ -477,7 +561,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#required' => FALSE,
     '#states' => array(
       'visible' => array(
-        ':input[name="parc_check"]' => array('value' => 'parc'),
+        ':input[name="parc_ecole_check"]' => array('value' => 'parc'),
         )
       ),
     '#ajax' => array(
@@ -488,16 +572,57 @@ function nids_obsnichoir_form($form, &$form_state) {
     ),
     '#default_value' => 'Choisir',
     );
+
+
+  $form['ecole'] = array(
+    '#title' => t("Pour quelle école?"),
+    '#type' => 'select',
+    '#options' => array(
+      'Choisir' => 'Choisir...',
+      'École Rose des Vents' => 'École Rose des Vents',
+      'École des Sources' => 'École des Sources',
+      'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
+      'École Mont Saint-Louis' => 'École Mont Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      ),
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="parc_ecole_check"]' => array('value' => 'nichoir_ecole'),
+        )
+      ),
+    '#ajax' => array(
+    'callback' => 'ajax_parc_nichoir_callback',
+    'wrapper' => 'nichoir_fs',
+    'method' => 'replace',
+    'effect' => 'fade',
+    ),
+    '#default_value' => 'Choisir',
+    );
+
+
   global $user;
-  $nidsopts=array('Choisir' => 'Choisir....');
+  $nidsopts=array(0 => 'Choisir....');
   if(!array_key_exists('values',$form_state)){
     $form_state['values']['parc']='';
+    $form_state['values']['ecole']='';
   }
-  if($path=='parc'){
+  if($path==='parc'){
       $nichoirs=db_select('nids_nichoirs','n')
       ->fields('n')
       ->condition('parc',$form_state['values']['parc'],'=')
       ->execute();
+  $nidsopts=array(0=>'Choisir...',
+    444=>'Nichoir fictif 1',
+    445=>'Nichoir fictif 2');
+  }else if ($path==='nichoir_ecole'){
+      $nichoirs=db_select('nids_nichoirs','n')
+      ->fields('n')
+      ->condition('ecole',$form_state['values']['ecole'],'=')
+      ->execute();
+  $nidsopts=array(0=>'Choisir...',
+    444=>'Nichoir fictif 1',
+    445=>'Nichoir fictif 2');
   }else{
     $nichoirs=db_select('nids_nichoirs','n')
     ->fields('n')
@@ -525,7 +650,6 @@ function nids_obsnichoir_form($form, &$form_state) {
     );
 
 
-
   $form['nichoir_fs']['nichoir'] = array(
     '#title' => t("Pour quel nichoir?"),
     '#type' => 'select',
@@ -540,10 +664,10 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#size' => 30,
     '#title' => "Date et heure (sur 24h) de l'observation",
     '#required' => TRUE,
-    '#datepicker_options' => array('appendText' => '(sur 24h)'),
+    //'#datepicker_options' => array('appendText' => '(sur 24h)'),
     '#states' => array(
       'visible' => array(
-        ':input[name="nichoir"]' => array('!value' => 'Choisir'),
+        ':input[name="nichoir"]' => array('!value' => 0),
         ),
       ),
     );
@@ -579,7 +703,6 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#default_value' => 'Choisir',
     '#states' => array(
       'visible' => array(
-        ':input[name="nichoir"]' => array('!value' => 'Choisir'),
         ':input[name="rien_vu"]' => array('checked' => FALSE),
         ),
       ),
@@ -593,7 +716,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#states' => array(
       'visible' => array(
         ':input[name="esp"]' => array('value' => 'Autre'),
-        ':input[name="nichoir"]' => array('!value' => 'Choisir'),
+        ':input[name="nichoir"]' => array('!value' => 0),
         ),
       ),
     );
@@ -617,7 +740,7 @@ function nids_obsnichoir_form($form, &$form_state) {
       ),
     '#states' => array(
       'visible' => array(
-        ':input[name="esp"]' => array('!value' => 'Choisir'),
+        //':input[name="esp"]' => array('!value' => 'Choisir'),
         ':input[name="rien_vu"]' => array('checked' => FALSE),
         ),
       ),
@@ -959,6 +1082,9 @@ function nichoir_form_submit($form, &$form_state) {
     'hauteur' => ($form_state['values']['hauteur']=='')?null:$form_state['values']['hauteur'],
     'orientation' => $form_state['values']['orientation'],
     ))->execute();
+ drupal_set_message('Nichoir ajouté!','status');
+ drupal_goto('<front>');
+
 }
 
 // Form validation handler.
@@ -991,7 +1117,10 @@ function cour_form_submit($form, &$form_state) {
   drupal_set_message('Observation ajoutée!','status');
 }
 
-
+function nids_form_submit($form, &$form_state){
+ drupal_set_message('Observation ajoutée!','status');
+ drupal_goto('observation');
+}
 
 function nichoir_insert($node) {
 }
@@ -1037,29 +1166,23 @@ function quastuvu1_callback(){
 function quastuvu2_callback(){
   return menu_tree('quastuvu2');
 }
-
 function quastuvu3_callback(){
-  return menu_tree('quastuvu3');
+  return menu_tree('quastuvu5');
+}
+
+function ecole_callback(){
+  return menu_tree('quastuvu5');
 }
 
 function quastuvu4_callback(){
   return drupal_get_form('nids_obscour_form');
 }
 
-
 function nichoir_callback(){
   //$block = module_invoke('nids', 'block_view', 'form_nichoir');
   return drupal_get_form('nids_obsnichoir_form');//$block['content'];
 }
 
-function nichoir_parc_callback(){
-  //$block = module_invoke('nids', 'block_view', 'form_nichoir');
-  return drupal_get_form('nids_obsnichoir_form');//$block['content'];
-}
-
-function mangeoire_callback(){
-  return drupal_get_form('nids_obsmangeoire_form');
-}
 
 function cour_callback(){
   return drupal_get_form('nids_obscour_form');

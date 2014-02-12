@@ -307,6 +307,9 @@
       locname = $("#adresse").text();
       //locname=$("input[name='location_name']").val();
       suffix='Quebec';
+      if (locname===""){
+        locname='Rimouski,';
+      }
       if(locname.indexOf(suffix, locname.length - suffix.length) == -1) {
         locname=locname + ' Quebec';
       }
@@ -320,7 +323,12 @@
           $('#noloc').hide();
           self.addMarker(results[0].geometry.location);
           self.map.setCenter(results[0].geometry.location);
-          self.map.setZoom(16);
+          if(results[0].formatted_address==='Rimouski, QC, Canada'){
+            self.map.setZoom(14);
+          }else{
+            self.map.setZoom(16);
+          }
+          
         } else {
           $('#noloc').show(); 
         }
