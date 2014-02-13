@@ -225,16 +225,36 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => '',
       );
 
+  global $user;
+  $user_role=db_select('users_roles','r')
+    ->fields('r',array('rid'))
+    ->condition('uid', $user->uid,'=')
+    ->execute()
+    ->fetchField();
 
-  $form['dans_un_parc'] = array(
-    '#title' => t("Est-ce un nichoir dans un parc?"),
+  $isscientist=($user_role==3 || $user_role==6);
+  $form['scientist'] = array(
+    '#type' => 'hidden',
+    //'#default_value' => $user_role,
+    '#default_value' => ($isscientist?1:0),
+    );
+
+
+  $form['dans_un_parc_ecole'] = array(
+    '#title' => t("Est-ce un dans une école ou dans un parc?"),
     '#type' => 'select',
     '#options' => array( 
-      1 => 'Oui', 
-      0 => 'Non',
+      'Non' => 'Non',
+      'Parc' => 'Parc',
+      'École' => 'École',
       ),
     '#required' => FALSE,
     '#default_value' => 0,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scientist"]' => array('value' => 1),
+        )
+      ),
     );
   $form['parc'] = array(
     '#title' => t("Pour quel parc?"),
@@ -250,22 +270,13 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
     '#required' => FALSE,
     '#states' => array(
       'visible' => array(
-        ':input[name="dans_un_parc"]' => array('value' => 1),
+        ':input[name="scientist"]' => array('value' => 1),
+        ':input[name="dans_un_parc_ecole"]' => array('value' => 'Parc'),
         )
       ),
     '#default_value' => null,
     );
 
-    $form['a_une_ecole'] = array(
-    '#title' => t("Est-ce un nichoir dans une cour d'école?"),
-    '#type' => 'select',
-    '#options' => array( 
-      1 => 'Oui', 
-      0 => 'Non',
-      ),
-    '#required' => FALSE,
-    '#default_value' => 0,
-    );
   $form['ecole'] = array(
     '#title' => t("Nom de l'école"),
     '#type' => 'select',
@@ -280,23 +291,18 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
     '#required' => FALSE,
     '#states' => array(
       'visible' => array(
-        ':input[name="a_une_ecole"]' => array('value' => 1),
+        ':input[name="scientist"]' => array('value' => 1),
+        ':input[name="dans_un_parc_ecole"]' => array('value' => 'École'),
         )
       ),
     );
+
 
     $form['geo'] = array(
       '#title' => t(''),
       '#type' => 'fieldset',
       );
 
-    global $user;
-    /*$user_role=db_select('users_roles',role)
-    ->fields('rid')
-    ->condition('uid', $user,'=')
-    ->execute()
-    ->fetchAssoc();
-    */
     $adresse=db_select('nids_users','n')
     ->fields('n')
     ->condition('uid',$user->uid,'=')
