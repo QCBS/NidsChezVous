@@ -160,6 +160,17 @@ function nids_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     );
+    
+  $items['nids_list'] = array(
+    'title'           => t('Liste de nichoirs'),
+    'description'     => t('Liste de nichoris'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('access content'),
+    'weight'          => 7,
+    'access callback' => 'user_access',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'nids_list',
+  	 );
 
   return $items;
 }
@@ -1081,6 +1092,8 @@ function nichoir_form_submit($form, &$form_state) {
     'uid' => $user->uid,
     'dncv' => $form_state['values']['dncv'],
     'dncv_no' => ($form_state['values']['numero']=='')?null:$form_state['values']['numero'],
+    'ecole' => $form_state['values']['ecole'],
+	 'parc' => $form_state['values']['parc'],
     'nom_nichoir' => $form_state['values']['nom_nichoir'],
     'geography' => $form_state['values']['geography'],
     'date_installation' => $form_state['values']['date_installation'],
@@ -1153,10 +1166,26 @@ function nids_user_register_validate(){
   form_set_error('valider', t('Veuillez fournir la bonne réponse à cette question!'));
 }
 }
+
+function nids_list(){
+  $block = module_invoke('nids', 'block_view', 'nids_list_nichoirs');
+  return $block['content'];
+}
+
 /**
  * Implements hook_block_info().
  */
 function nids_block_info() {
+	$blocks = array();
+	$blocks['nids_list_nichoirs'] = array(
+   'info' => t('A block to show nids_nichoirs datasets'),
+   'cache' => DRUPAL_NO_CACHE,
+   'region' => 'content',
+   'status' => TRUE,
+   'visibility' => BLOCK_VISIBILITY_LISTED,
+   'pages' => 'nids_list999'
+  );
+  return $blocks;
 }
 
 /**
@@ -1164,27 +1193,30 @@ function nids_block_info() {
  */
 function nids_block_view($block_name = '') {
 
-/********************************************************************
-if ($block_name == 'nids_datasets') {
-    $query=db_select('nids_dataset', 't')
-    -> fields('t', array('nid', 'dataset_name','dataset_description'));
+if ($block_name == 'nids_list_nichoirs') {
+    $query=db_select('nids_nichoirs','t')->fields('t',array('nid_id', 'uid', 'nom_nichoir', 'parc', 'ecole', 'date_installation'));
     $result = $query->execute();
-    $header = array(t('Dataset name'),t('Last modified'),t(''));
+    $header = array(t('Nom du nichoir'),t('Username'), t('Place'), t('Date d\'installation'));
     $rows = array();
 
     foreach ($result as $node) {
-      $isnode = node_load($node->nid);
+      $isnode = node_load($node->nid_id);
       $options = array('absolute' => TRUE);
-      $changed = db_select('node', 'n')->fields('n', array('changed'))->condition('nid',$node->nid,'=')->execute()->fetchField();
-      $url = url('node/' . $node->nid, $options);
-      if(node_access('update',$node->nid)){
+      $changed = db_select('node', 'n')
+      ->fields('n', array('changed'))
+      ->condition('nid',$node->nid_id,'=')
+      ->execute()
+      ->fetchField();
+      $url = url('node/' . $node->nom_nichoir, $options);
+      if(node_access('update',$node->nid_id)){
           $edit='<a href='.$url.'/edit>Edit</a>';
       }else{
         $edit='';
       }
-      $rows[] = array('<a href='.$url.'>'.$node->dataset_name.'</a>',gmdate("Y-m-d",$changed),$edit);
+		
+      $rows[] = array('<a href='.$url.'>'.$node->nom_nichoir.'</a>', $node->uid, $node->parc, $node->date_installation);
     }
-
+ 	
     //Return the content of the block
     $content=theme('table', array('header' => $header, 'rows' => $rows));
     $block = array(
@@ -1193,7 +1225,7 @@ if ($block_name == 'nids_datasets') {
     );
     return $block;
   }
-********************************************************************/
+
 }
 
 function quastuvu1_callback(){
