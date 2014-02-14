@@ -165,7 +165,7 @@ function nids_menu() {
     'title'           => t('Liste de nichoirs'),
     'description'     => t('Liste de nichoris'),
     'menu_name'       => 'main-menu',
-    'access arguments' => array('access content'),
+    'access arguments' => array('create nichoir content'),
     'weight'          => 7,
     'access callback' => 'user_access',
     'type' => MENU_NORMAL_ITEM,
@@ -702,7 +702,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     );
 
 
-  $form['esp'] = array(
+  $form['espece'] = array(
     '#title' => t("Quelle espèce?"),
     '#type' => 'select',
     '#options' => array(
@@ -732,7 +732,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#title' => '<h4>'.t("Veuillez préciser l'espèce...").'</h4>',
     '#states' => array(
       'visible' => array(
-        ':input[name="esp"]' => array('value' => 'Autre'),
+        ':input[name="espece"]' => array('value' => 'Autre'),
         ':input[name="nichoir"]' => array('!value' => 0),
         ),
       ),
@@ -743,18 +743,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#type' => 'radios',
     '#size' => 50,
     '#required' => FALSE,
-    '#options' => array(
-      1 => t('Entrée ou sortie du nichoir'),
-      2 => t('Apport de brindilles'),
-      3 => t("Accouplement"),
-      4 => t('Sons de poussins, quémande alimentaire'),
-      5 => t('Alimentation des poussins par les parents (bec avec des chenilles, etc.)'),
-      6 => t('Oiseau chante sur ou proche du nichoir'),
-      7 => t('Il y a des oeufs dans le nid'),
-      8 => t('Il y a des oisillons dans le nid'),
-      9 => t('Les oiseaux semblent avoir abandonné le nid'),
-      10 => t('Autre'),
-      ),
+    '#options' => _nichoir_type_observation(),
     '#states' => array(
       'visible' => array(
         //':input[name="esp"]' => array('!value' => 'Choisir'),
@@ -771,7 +760,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#states' => array(
       'visible' => array(
         ':input[name="type_obs"]' => array('value' => 10),
-        ':input[name="esp"]' => array('!value' => 'Choisir'),
+        ':input[name="espece"]' => array('!value' => 'Choisir'),
         ),
       ),
     );
@@ -806,8 +795,8 @@ function nids_obsnichoir_form($form, &$form_state) {
     $module_path . '/javascript/selectboxit.js',
     );
   $form['#attached']['js'] = $js_files;
-  $form['#validate'][] = 'nids_form_validate';
-  $form['#submit'][] = 'nids_form_submit';
+  $form['#validate'][] = 'nids_obsnichoir_form_validate';
+  $form['#submit'][] = 'nids_obsnichoir_form_submit';
   $form['title']['#title'] = 'Ajouter un nichoir';
   return $form;
 }
@@ -1136,7 +1125,22 @@ function cour_form_submit($form, &$form_state) {
   drupal_set_message('Observation ajoutée!','status');
 }
 
-function nids_form_submit($form, &$form_state){
+function nids_obsnichoir_form_validate($form, &$form_state){
+}
+
+function nids_obsnichoir_form_submit($form, &$form_state){
+  global $user;
+  db_insert('nids_nichoirs_obs')->fields(array(
+      'uid' => $user->uid,
+      'nid_id' => $form_state['values']['nichoir'],
+      'date_obs' => $form_state['values']['date'],
+      'rien_vu' => $form_state['values']['rien_vu'],
+      'type_obs' => $form_state['values']['type_obs'],
+      'type_obs_autre' => $form_state['values']['type_obs_autre'],
+      'oiseau_espece' => $form_state['values']['espece'],
+      'oiseau_espece_autre' => $form_state['values']['espece_autre'],
+      )
+    )->execute();
  drupal_set_message('Observation ajoutée!','status');
  drupal_goto('observation');
 }
@@ -1162,9 +1166,9 @@ function _nids_fields($node) {
 
 
 function nids_user_register_validate(){
-   if (strpos($form_state['values']['valider'],'vous')===false){
-  form_set_error('valider', t('Veuillez fournir la bonne réponse à cette question!'));
-}
+  if (strpos($form_state['values']['valider'],'vous')===false){
+    form_set_error('valider', t('Veuillez fournir la bonne réponse à cette question!'));
+  }
 }
 
 function nids_list(){
@@ -1196,7 +1200,7 @@ function nids_block_view($block_name = '') {
 if ($block_name == 'nids_list_nichoirs') {
     $query=db_select('nids_nichoirs','t')->fields('t',array('nid_id', 'uid', 'nom_nichoir', 'parc', 'ecole', 'date_installation'));
     $result = $query->execute();
-    $header = array(t('Nom du nichoir'),t('Username'), t('Place'), t('Date d\'installation'));
+    $header = array(t('Nom du nichoir'),t('Nom'), t('Place'), t('Date d\'installation'));
     $rows = array();
 
     foreach ($result as $node) {
@@ -1275,6 +1279,22 @@ function inscription_callback(){
 
 function ajax_ajout_oiseau_callback($form, $form_state) {
   return $form['oiseau'];
+}
+
+function _nichoir_type_observation($key = NULL) {
+  $options = array(
+      1 => t('Entrée ou sortie du nichoir'),
+      2 => t('Apport de brindilles'),
+      3 => t("Accouplement"),
+      4 => t('Sons de poussins, quémande alimentaire'),
+      5 => t('Alimentation des poussins par les parents (bec avec des chenilles, etc.)'),
+      6 => t('Oiseau chante sur ou proche du nichoir'),
+      7 => t('Il y a des oeufs dans le nid'),
+      8 => t('Il y a des oisillons dans le nid'),
+      9 => t('Les oiseaux semblent avoir abandonné le nid'),
+      10 => t('Autre'),
+    );
+  return ($key) ? $options[$key] : $options;
 }
 
 
