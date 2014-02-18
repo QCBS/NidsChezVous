@@ -171,6 +171,17 @@ function nids_menu() {
     'type' => MENU_NORMAL_ITEM,
     'page callback' => 'nids_list',
   	 );
+	 
+  $items['nids_obsv'] = array(
+    'title'           => t('Liste d\'observation'),
+    'description'     => t('Liste d\'observation'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('create nichoir content'),
+    'weight'          => 8,
+    'access callback' => 'user_access',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'nids_obsv',
+  	 );
 
   return $items;
 }
@@ -1170,6 +1181,68 @@ function nids_user_register_validate(){
     form_set_error('valider', t('Veuillez fournir la bonne réponse à cette question!'));
   }
 }
+
+function nids_obsv(){
+	$block = module_invoke('nids', 'block_view', 'nids_oiseaux_cour_list'); // check naming convention for double the block_view
+	return $block['content'];
+}
+
+// For Nids observations inserted in Ajouter_une_obs/dans_ta_cour/Oiseau_observé_dans_ta_cour
+function nids_block_info() {
+	$blocks = array();
+	$blocks['nids_oiseaux_cour'] = array(
+   'info' => t('A block to show nids_observations_dans_ta_cour datasets'),
+   'cache' => DRUPAL_NO_CACHE,
+   'region' => 'content',
+   'status' => TRUE,
+   'visibility' => BLOCK_VISIBILITY_LISTED,
+   'pages' => 'nids_oiseaux_cour_list' // check naming convention for double the block_view
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function nids_block_view($block_name = '') {
+
+if ($block_name == 'nids_oiseaux_cour_list') {
+    $query=db_select('nids_oiseaux_cour','t')->fields('t',array('obs_id', 'uid', 'date_obs', 
+	'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'));
+    $result = $query->execute();
+    $header = array(t('Name1'),t('Name2'), t('Name3'), t('Name4'), t('Name5'), t('Name6'), t('Name7'));
+    $rows = array();
+
+    foreach ($result as $node) {
+      $isnode = node_load($node->nid_id);
+      $options = array('absolute' => TRUE);
+      $changed = db_select('node', 'n')
+      ->fields('n', array('changed'))
+      //->condition('nid',$node->nid_id,'=') //No condition for now
+      ->execute()
+      ->fetchField();
+      $url = url('node/' . $node->oiseau_espece, $options);
+      if(node_access('update',$node->obs_id)){
+          $edit='<a href='.$url.'/edit>Edit</a>';
+      }else{
+        $edit='';
+      }
+		
+      $rows[] = array('<a href='.$url.'>'.$node->obs_id.'</a>', $node->uid, $node->date_obs, 
+	  $node->rien_vu, $node->duree_obs, $node->oiseau_espece, $node->nombre_individus);
+    }
+ 	
+    //Return the content of the block
+    $content=theme('table', array('header' => $header, 'rows' => $rows));
+    $block = array(
+      'subject' => t('List of nids observation in dans ta Cour datasets'),
+      'content' => $content,
+    );
+    return $block;
+  }
+
+}
+
 
 function nids_list(){
   $block = module_invoke('nids', 'block_view', 'nids_list_nichoirs');
