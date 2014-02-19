@@ -303,7 +303,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
     '#title' => t("Nom de l'école"),
     '#type' => 'select',
     '#options' => array(
-      'Choisir' => 'Choisir...',
+      null => 'Choisir...',
       'École Rose des Vents' => 'École Rose des Vents',
       'École des Sources' => 'École des Sources',
       'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
@@ -398,7 +398,7 @@ $form['orientation'] = array(
   '#title' => t("Orientation du nichoir"),
   '#type' => 'select',
   '#options' => array(
-    'Choisir' => 'Choisir...',
+    null => 'Choisir...',
     'Nord' => 'Nord',
     'Sud' => 'Sud',
     'Est' => 'Est',
@@ -451,7 +451,7 @@ return $form;
     '#title' => t("Nom de l'école"),
     '#type' => 'select',
     '#options' => array(
-      'Choisir' => 'Choisir...',
+      null => 'Choisir...',
       'École Rose des Vents' => 'École Rose des Vents',
       'École des Sources' => 'École des Sources',
       'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
@@ -579,7 +579,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#title' => t("Pour quel parc?"),
     '#type' => 'select',
     '#options' => array(
-      'Choisir' => 'Choisir...',
+      null => 'Choisir...',
       'Lepage' => 'Lepage',
       'Beauséjour' => 'Beauséjour',
       'La gare' => 'La gare',
@@ -606,7 +606,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#title' => t("Pour quelle école?"),
     '#type' => 'select',
     '#options' => array(
-      'Choisir' => 'Choisir...',
+      null => 'Choisir...',
       'École Rose des Vents' => 'École Rose des Vents',
       'École des Sources' => 'École des Sources',
       'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
@@ -717,7 +717,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#title' => t("Quelle espèce?"),
     '#type' => 'select',
     '#options' => array(
-      'Choisir' => 'Choisir...',
+      null => 'Choisir...',
       'Moineau domestique' => 'Moineau domestique',
       'Hirondelle bicolore' => 'Hirondelle bicolore',
       'Mésange à tête noire' => 'Mésange à tête noire',
@@ -1102,8 +1102,6 @@ function nichoir_form_submit($form, &$form_state) {
     'orientation' => $form_state['values']['orientation'],
     ))->execute();
  drupal_set_message('Nichoir ajouté!','status');
- drupal_goto('<front>');
-
 }
 
 // Form validation handler.
@@ -1182,73 +1180,18 @@ function nids_user_register_validate(){
   }
 }
 
-function nids_obsv(){
-	$block = module_invoke('nids', 'block_view', 'nids_oiseaux_cour_list'); // check naming convention for double the block_view
-	return $block['content'];
-}
-
-// For Nids observations inserted in Ajouter_une_obs/dans_ta_cour/Oiseau_observé_dans_ta_cour
-function nids_block_info() {
-	$blocks = array();
-	$blocks['nids_oiseaux_cour'] = array(
-   'info' => t('A block to show nids_observations_dans_ta_cour datasets'),
-   'cache' => DRUPAL_NO_CACHE,
-   'region' => 'content',
-   'status' => TRUE,
-   'visibility' => BLOCK_VISIBILITY_LISTED,
-   'pages' => 'nids_oiseaux_cour_list' // check naming convention for double the block_view
-  );
-  return $blocks;
-}
-
 /**
  * Implements hook_block_view().
  */
-function nids_block_view($block_name = '') {
-
-if ($block_name == 'nids_oiseaux_cour_list') {
-    $query=db_select('nids_oiseaux_cour','t')->fields('t',array('obs_id', 'uid', 'date_obs', 
-	'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'));
-    $result = $query->execute();
-    $header = array(t('Name1'),t('Name2'), t('Name3'), t('Name4'), t('Name5'), t('Name6'), t('Name7'));
-    $rows = array();
-
-    foreach ($result as $node) {
-      $isnode = node_load($node->nid_id);
-      $options = array('absolute' => TRUE);
-      $changed = db_select('node', 'n')
-      ->fields('n', array('changed'))
-      //->condition('nid',$node->nid_id,'=') //No condition for now
-      ->execute()
-      ->fetchField();
-      $url = url('node/' . $node->oiseau_espece, $options);
-      if(node_access('update',$node->obs_id)){
-          $edit='<a href='.$url.'/edit>Edit</a>';
-      }else{
-        $edit='';
-      }
-		
-      $rows[] = array('<a href='.$url.'>'.$node->obs_id.'</a>', $node->uid, $node->date_obs, 
-	  $node->rien_vu, $node->duree_obs, $node->oiseau_espece, $node->nombre_individus);
-    }
- 	
-    //Return the content of the block
-    $content=theme('table', array('header' => $header, 'rows' => $rows));
-    $block = array(
-      'subject' => t('List of nids observation in dans ta Cour datasets'),
-      'content' => $content,
-    );
-    return $block;
-  }
-
+function nids_obsv(){
+	$block = module_invoke('nids', 'block_view', 'nids_oiseaux_cour_list');
+	return $block['content'];
 }
-
 
 function nids_list(){
   $block = module_invoke('nids', 'block_view', 'nids_list_nichoirs');
   return $block['content'];
 }
-
 /**
  * Implements hook_block_info().
  */
@@ -1262,6 +1205,24 @@ function nids_block_info() {
    'visibility' => BLOCK_VISIBILITY_LISTED,
    'pages' => 'nids_list999'
   );
+  
+	$blocks['nids_oiseaux_cour'] = array(
+   'info' => t('A block to show nids_observations_dans_ta_cour datasets'),
+   'cache' => DRUPAL_NO_CACHE,
+   'region' => 'content',
+   'status' => TRUE,
+   'visibility' => BLOCK_VISIBILITY_LISTED,
+   'pages' => 'nids_oiseaux_cour_list'
+  );
+  //ajouter/danstacour/danstonichoir
+  	$blocks['nids_obsv_cour_nichoir'] = array(
+   'info' => t('A block to show ajouter/danstacour/danstonichoir datasets'),
+   'cache' => DRUPAL_NO_CACHE,
+   'region' => 'content',
+   'status' => TRUE,
+   'visibility' => BLOCK_VISIBILITY_LISTED,
+   'pages' => 'nids_obsv_cour_nichoir'
+  );
   return $blocks;
 }
 
@@ -1271,33 +1232,67 @@ function nids_block_info() {
 function nids_block_view($block_name = '') {
 
 if ($block_name == 'nids_list_nichoirs') {
-    $query=db_select('nids_nichoirs','t')->fields('t',array('nid_id', 'uid', 'nom_nichoir', 'parc', 'ecole', 'date_installation'));
-    $result = $query->execute();
-    $header = array(t('Nom du nichoir'),t('Nom'), t('Place'), t('Date d\'installation'));
+$query = db_select('nids_nichoirs', 'n');
+$query->join('nids_users', 'u', 'n.uid = u.uid'); 			//JOIN node with users
+$query->fields('n',array('nid_id', 'uid', 'dncv', 'dncv_no', 
+    				'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
+    				'habitat', 'hauteur', 'orientation'))		//SELECTED the fields from node
+    	->fields('u',array('prenom', 'nom_famille'));							//SELECT the fields from user
+$result = $query->execute();
+$header = array(t('Numéro du Nichoir'),t('Nom'), t('Nom du Nichoir'), t('Location'), t('Geography'), 
+    				t('Date d\'installation'), t('Habitat'), t('Hauteur'), t('Orientation'));
+$rows = array();
+foreach ($result as $node1) {
+      $isnode = node_load($node1->nid_id);
+      $options = array('absolute' => TRUE);
+      $url = url($node1->nom_nichoir, $options);
+     /* if(node_access('update',$node1->nid_id)){
+          //$edit='<a href='.$url.'/edit>Edit</a>';
+			 $edit='';
+      }else{
+        $edit='';
+      }
+		*/
+      $rows[] = array($node1->dncv_no, $node1->prenom. ' ' .$node1->nom_famille, '<a href='.$url.'>'.$node1->nom_nichoir.'</a>', 'Parc: '.$node1->parc .'<br>'.'École: '.$node1->ecole, 
+      $node1->geography, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation);
+    }	
+    //Return the content of the block
+    $content=theme('table', array('header' => $header, 'rows' => $rows));
+    $block = array(
+      'subject' => t('List of nids datasets'),
+      'content' => $content,
+    );
+    return $block;
+  }
+  elseif ($block_name == 'nids_oiseaux_cour_list') {
+    $query2=db_select('nids_oiseaux_cour','t');
+    $query2->join('nids_users', 'u', 't.uid = u.uid');
+    $query2->fields('t',array('obs_id', 'uid', 'date_obs', 
+						  'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))
+			  ->fields('u',array('prenom', 'nom_famille'));
+    
+    $result = $query2->execute();
+    $header = array(t('Nom'), t('Date d\'observation'), t('Rien Vu?'), t('Durée d\'Observation'), t('Oiseau Èspece'), t('Nombre d\'Individus'));
     $rows = array();
 
-    foreach ($result as $node) {
-      $isnode = node_load($node->nid_id);
+    foreach ($result as $node2) {
+      $isnode = node_load($node2->obs_id);
       $options = array('absolute' => TRUE);
-      $changed = db_select('node', 'n')
-      ->fields('n', array('changed'))
-      ->condition('nid',$node->nid_id,'=')
-      ->execute()
-      ->fetchField();
-      $url = url('node/' . $node->nom_nichoir, $options);
-      if(node_access('update',$node->nid_id)){
+      $url = url($node2->oiseau_espece, $options);
+      /*if(node_access('update',$node2->obs_id)){
           $edit='<a href='.$url.'/edit>Edit</a>';
       }else{
         $edit='';
       }
-		
-      $rows[] = array('<a href='.$url.'>'.$node->nom_nichoir.'</a>', $node->uid, $node->parc, $node->date_installation);
+  		*/
+      $rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $node2->date_obs, 
+	   $node2->rien_vu, $node2->duree_obs, '<a href='.$url.'>'.$node2->oiseau_espece.'</a>', $node2->nombre_individus);
     }
  	
     //Return the content of the block
     $content=theme('table', array('header' => $header, 'rows' => $rows));
     $block = array(
-      'subject' => t('List of nids datasets'),
+      'subject' => t('List of nids observation in dans ta Cour datasets'),
       'content' => $content,
     );
     return $block;
