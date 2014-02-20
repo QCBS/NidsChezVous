@@ -185,6 +185,11 @@ $schema['nids_nichoirs_obs'] = array(
       'type' => 'int',
       'not null' => TRUE,
       ),
+    'nid_id' => array(
+      'description' => 'Nichoir id',
+      'type' => 'int',
+      'not null' => TRUE,
+      ),
     'date_obs' => array(
       'description' => 'Date de l\'observation',
       'type' => 'varchar',
@@ -196,24 +201,55 @@ $schema['nids_nichoirs_obs'] = array(
       'type' => 'int',
       'not null' => FALSE,
       ),
-    'duree_obs' => array(
-      'description' => 'Indiquer la durée de la période d\'observation (en minutes)',
-      'type' => 'int',
-      'not null' => FALSE,
-      ),
     'oiseau_espece' => array(
       'description' => 'Quelle espece',
       'type' => 'varchar',
       'length' => 255,
       'not null' => FALSE,
       ),
-    'nombre_individus' => array(
-      'description' => 'Indiquer le nombre maximal d\'individus observés (approximatif pour les grands nombres)',
-      'type' => 'int',
+    'oiseau_espece_autre' => array(
+      'description' => 'Autre espece',
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+      ),
+    'type_obs' => array(
+      'description' => 'Type d\'observation',
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+      ),
+    'type_obs_autre' => array(
+      'description' => 'Autre type d\'observation',
+      'type' => 'varchar',
+      'length' => 255,
       'not null' => FALSE,
       ),
     ),
 'primary key' => array('obs_id'),
+);
+
+$schema['nids_nichoir_type_obs'] = array(
+  'description' => 'observations dans les nichoirs',
+  'fields' => array(
+    'type_obs_id' => array(
+      'description' => 'ID unique pour le type d\'observation',
+      'type' => 'serial',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      ),
+    'type_obs_key' => array(
+      'description' => 'Clé du type d\'observation',
+      'type' => 'int',
+      'not null' => TRUE,
+      ),
+    'description' => array(
+      'description' => 'Description',
+      'type' => 'varchar',
+      'length'=> '255',
+      ),
+    ),
+  'primary key' => array('type_obs_id'),
 );
 
 
@@ -261,7 +297,13 @@ function nids_install() {
     );
   menu_save($menu);
   cache_clear_all('*', 'cache_menu', TRUE);
-
+  $typeobs=_nichoir_type_observation();
+  foreach($typeobs as $key=>$value){
+      db_insert('nids_nichoir_type_obs')->fields(array(
+        'type_obs_key'=>$key,
+        'description'=>$value,
+      ))->execute();
+  }
 }
 
 
