@@ -432,8 +432,8 @@ $form['options']['status']['#value'] = TRUE;
 $form['options']['status']['#checked'] = TRUE;
 drupal_set_title(t("Ajouter un nichoir"));
 return $form;
-}else if($form_id === 'user_register_form'){
-
+}else if($form_id == 'user_register_form' | $form_id == 'user_profile_form'){
+  //debug($form_state['user']);
   $form['type_utilisateur'] = array(
     '#title' => t("S'insrire en tant que..."),
     '#type' => 'select',
@@ -444,7 +444,7 @@ return $form;
       //6 => 'Chercheur scientifique',
       ),
     '#required' => TRUE,
-    '#default_value' => 'Choisir',
+    '#default_value' => isset($form_state['user']->role) ? $form_state['user']->role : "",
     );
 
   $form['ecole'] = array(
@@ -459,6 +459,7 @@ return $form;
       'École Saint-Rosaire' => 'École Saint-Rosaire',
       ),
     '#required' => FALSE,
+    '#default_value' => isset($form_state['user']->ecole) ? $form_state['user']->ecole : "",
     '#states' => array(
       'visible' => array(
         ':input[name="type_utilisateur"]' => array(
@@ -472,21 +473,21 @@ return $form;
     '#title' => t("Prénom"),
     '#type' => 'textfield',
     '#required' => TRUE,
-    '#default_value' => '',
+    '#default_value' => isset($form_state['user']->prenom) ? $form_state['user']->prenom : "",
     '#size'=> 30,
     );
   $form['nom_famille'] = array(
     '#title' => t("Nom de famille"),
     '#type' => 'textfield',
     '#required' => TRUE,
-    '#default_value' => '',
+    '#default_value' => isset($form_state['user']->nom_famille) ? $form_state['user']->nom_famille : "",
     '#size'=> 30,
     );
   $form['telephone'] = array(
     '#title' => t("Numéro de téléphone (optionnel)"),
     '#type' => 'textfield',
     '#required' => FALSE,
-    '#default_value' => '',
+    '#default_value' => isset($form_state['user']->telephone) ? $form_state['user']->telephone : "",
     '#size'=> 30,
     );
 
@@ -494,7 +495,6 @@ return $form;
     '#title' => t("Adresse"),
     '#type' => 'fieldset',
     '#required' => FALSE,
-    '#default_value' => '',
     '#size'=> 30,
     '#tree' =>FALSE,
     '#states' => array(
@@ -505,34 +505,35 @@ return $form;
     '#title' => t("Numéro civique et rue (ex. 145 rue Chambord)"),
     '#type' => 'textfield',
     '#required' => FALSE,
-    '#default_value' => '',
+    '#default_value' => isset($form_state['user']->adresse) ? $form_state['user']->adresse : "",
     '#size'=> 30,
     );
   $form['adresse']['adresse_appt'] = array(
     '#title' => t("Appartement (si applicable)"),
     '#type' => 'textfield',
     '#required' => FALSE,
-    '#default_value' => '',
+    '#default_value' => isset($form_state['user']->appartement) ? $form_state['user']->appartement : "",
     '#size'=> 10,
     );
   $form['adresse']['adresse_ville'] = array(
     '#title' => t("Ville"),
     '#type' => 'textfield',
     '#required' => FALSE,
-    '#default_value' => '',
+    '#default_value' => isset($form_state['user']->ville) ? $form_state['user']->ville : "",
     '#size'=> 30,
     );
   $form['adresse']['adresse_code_postal'] = array(
     '#title' => t("Code postal"),
     '#type' => 'textfield',
     '#required' => FALSE,
-    '#default_value' => '',
+    '#default_value' => isset($form_state['user']->code_postal) ? $form_state['user']->code_postal : "",
     '#size'=> 30,
     );
 
-  $form['mangeoire'] = array(
+  $form['mangeoires'] = array(
     '#title' => t("Est-ce que vous avez une/des mangeoire(s) pour les oiseaux dans votre cour?"),
     '#type' => 'select',
+    '#default_value' => isset($form_state['user']->mangeoires) ? $form_state['user']->mangeoires : "",
     '#options' => array( 
       1 => 'Oui', 
       2 => 'Non',
@@ -544,11 +545,11 @@ return $form;
     '#title' => t("Combien de mangeoires avez-vous?"),
     '#type' => 'textfield',
     '#required' => FALSE,
-    '#default_value' => '',
+    '#default_value' => isset($form_state['user']->mangeoires_nombre) ? $form_state['user']->mangeoires_nombre : "",
     '#size'=> 30,
     '#states' => array(
       'visible' => array(
-        ':input[name="mangeoire"]' => array('value' => 1))),
+        ':input[name="mangeoires"]' => array('value' => 1))),
     );
 
   $form['valider'] = array(
@@ -1069,6 +1070,8 @@ function nids_user_insert(&$edit, $account, $category) {
     'ville' => $edit['adresse_ville'],
     'code_postal' => $edit['adresse_code_postal'],
     'telephone' => $edit['telephone'],
+    'mangeoires' => $edit['mangeoires'],
+    'mangeoires_nombre' => $edit['mangeoires_nombre'],
     ))->execute();
   db_insert('users_roles')->fields(array(
     'uid' => $account->uid,
@@ -1076,6 +1079,46 @@ function nids_user_insert(&$edit, $account, $category) {
     ))->execute();
 drupal_set_message('Veuillez vérifier vos courriels pour valider l\'inscription!','status');
 }
+
+function nids_user_update(&$edit, $account, $category) {
+  db_update('nids_users')->fields(array(
+    'nom_famille' => $edit['nom_famille'],
+    'prenom' => $edit['prenom'],
+    'ecole' => $edit['ecole'],
+    'adresse' => $edit['adresse_civique'],
+    'appartement' => $edit['adresse_appt'],
+    'ville' => $edit['adresse_ville'],
+    'code_postal' => $edit['adresse_code_postal'],
+    'telephone' => $edit['telephone'],
+    'mangeoires' => $edit['mangeoires'],
+    'mangeoires_nombre' => $edit['mangeoires_nombre'],
+    ))->condition('uid', $account->uid,'=')->execute();
+  db_update('users_roles')->fields(array('rid' => $edit['type_utilisateur']))->condition('uid', $account->uid,'=')->execute();
+drupal_set_message('Profil mis à jour!','status');
+}
+
+
+
+function nids_user_load($users) {
+  $result = db_query('SELECT * FROM nids_users WHERE uid IN (:uids)', array(':uids' => array_keys($users)));
+  foreach ($result as $record) {
+    $users[$record->uid]->nom_famille = $record->nom_famille;
+    $users[$record->uid]->prenom = $record->prenom;
+    $users[$record->uid]->ecole = $record->ecole;
+    $users[$record->uid]->adresse = $record->adresse;
+    $users[$record->uid]->appartement = $record->appartement;
+    $users[$record->uid]->ville = $record->ville;
+    $users[$record->uid]->code_postal = $record->code_postal;
+    $users[$record->uid]->telephone = $record->telephone;
+    $users[$record->uid]->mangeoires = $record->mangeoires;
+    $users[$record->uid]->mangeoires_nombre = $record->mangeoires_nombre;
+  }
+  $result = db_query('SELECT uid, rid FROM users_roles WHERE uid IN (:uids)', array(':uids' => array_keys($users)));
+  foreach ($result as $record) {
+    $users[$record->uid]->role = $record->rid;
+  }
+}
+
 
 
 // Form validation handler.
@@ -1113,7 +1156,6 @@ function cour_form_validate($form, &$form_state) {
 
 // Form submit handler.
 function cour_form_submit($form, &$form_state) {
-  //debug(key($form_state['values']['espece_0']));
   global $user;
   $numoiseaux=0;
   foreach ($form_state['values'] as $key => $value) {
@@ -1187,62 +1229,6 @@ function nids_obsv(){
 	return $block['content'];
 }
 
-// For Nids observations inserted in Ajouter_une_obs/dans_ta_cour/Oiseau_observé_dans_ta_cour
-function nids_block_info() {
-	$blocks = array();
-	$blocks['nids_oiseaux_cour'] = array(
-   'info' => t('A block to show nids_observations_dans_ta_cour datasets'),
-   'cache' => DRUPAL_NO_CACHE,
-   'region' => 'content',
-   'status' => TRUE,
-   'visibility' => BLOCK_VISIBILITY_LISTED,
-   'pages' => 'nids_oiseaux_cour_list' // check naming convention for double the block_view
-  );
-  return $blocks;
-}
-
-/**
- * Implements hook_block_view().
- */
-function nids_block_view($block_name = '') {
-
-if ($block_name == 'nids_oiseaux_cour_list') {
-    $query=db_select('nids_oiseaux_cour','t')->fields('t',array('obs_id', 'uid', 'date_obs', 
-	'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'));
-    $result = $query->execute();
-    $header = array(t('Name1'),t('Name2'), t('Name3'), t('Name4'), t('Name5'), t('Name6'), t('Name7'));
-    $rows = array();
-
-    foreach ($result as $node) {
-      $isnode = node_load($node->nid_id);
-      $options = array('absolute' => TRUE);
-      $changed = db_select('node', 'n')
-      ->fields('n', array('changed'))
-      //->condition('nid',$node->nid_id,'=') //No condition for now
-      ->execute()
-      ->fetchField();
-      $url = url('node/' . $node->oiseau_espece, $options);
-      if(node_access('update',$node->obs_id)){
-          $edit='<a href='.$url.'/edit>Edit</a>';
-      }else{
-        $edit='';
-      }
-		
-      $rows[] = array('<a href='.$url.'>'.$node->obs_id.'</a>', $node->uid, $node->date_obs, 
-	  $node->rien_vu, $node->duree_obs, $node->oiseau_espece, $node->nombre_individus);
-    }
- 	
-    //Return the content of the block
-    $content=theme('table', array('header' => $header, 'rows' => $rows));
-    $block = array(
-      'subject' => t('List of nids observation in dans ta Cour datasets'),
-      'content' => $content,
-    );
-    return $block;
-  }
-
-}
-
 
 function nids_list(){
   $block = module_invoke('nids', 'block_view', 'nids_list_nichoirs');
@@ -1261,6 +1247,14 @@ function nids_block_info() {
    'status' => TRUE,
    'visibility' => BLOCK_VISIBILITY_LISTED,
    'pages' => 'nids_list999'
+  );
+  $blocks['nids_oiseaux_cour'] = array(
+   'info' => t('A block to show nids_observations_dans_ta_cour datasets'),
+   'cache' => DRUPAL_NO_CACHE,
+   'region' => 'content',
+   'status' => TRUE,
+   'visibility' => BLOCK_VISIBILITY_LISTED,
+   'pages' => 'nids_oiseaux_cour_list' // check naming convention for double the block_view
   );
   return $blocks;
 }
@@ -1301,7 +1295,43 @@ if ($block_name == 'nids_list_nichoirs') {
       'content' => $content,
     );
     return $block;
+  } else if ($block_name == 'nids_oiseaux_cour_list') {
+    $query=db_select('nids_oiseaux_cour','t')->fields('t',array('obs_id', 'uid', 'date_obs', 
+  'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'));
+    $result = $query->execute();
+    $header = array(t('Name1'),t('Name2'), t('Name3'), t('Name4'), t('Name5'), t('Name6'), t('Name7'));
+    $rows = array();
+
+    foreach ($result as $node) {
+      $isnode = node_load($node->nid_id);
+      $options = array('absolute' => TRUE);
+      $changed = db_select('node', 'n')
+      ->fields('n', array('changed'))
+      //->condition('nid',$node->nid_id,'=') //No condition for now
+      ->execute()
+      ->fetchField();
+      $url = url('node/' . $node->oiseau_espece, $options);
+      if(node_access('update',$node->obs_id)){
+          $edit='<a href='.$url.'/edit>Edit</a>';
+      }else{
+        $edit='';
+      }
+    
+      $rows[] = array('<a href='.$url.'>'.$node->obs_id.'</a>', $node->uid, $node->date_obs, 
+    $node->rien_vu, $node->duree_obs, $node->oiseau_espece, $node->nombre_individus);
+    }
+  
+    //Return the content of the block
+    $content=theme('table', array('header' => $header, 'rows' => $rows));
+    $block = array(
+      'subject' => t('List of nids observation in dans ta Cour datasets'),
+      'content' => $content,
+    );
+    return $block;
   }
+
+
+
 
 }
 

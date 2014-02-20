@@ -45,6 +45,12 @@ function nids_schema() {
         'description' => 'Code postal',
         'type' => 'varchar',
         'length' => 8),
+      'mangeoires' => array(
+        'description' => 'Avez vous de mangeoires?',
+        'type' => 'int'),
+      'mangeoires_nombre' => array(
+        'description' => 'Combien de mangeoires',
+        'type' => 'int'),
       ),
 'indexes' => array(
   'node_dataset' => array('uid')
@@ -262,7 +268,7 @@ return $schema;
  * Implements hook_uninstall().
  */
 function nids_uninstall() {
-  db_drop_table('nids_users');
+  //db_drop_table('nids_users');
   db_drop_table('nids_nichoirs');
   db_drop_table('nids_oiseaux_cour');
   /*$results = db_select('node', 'n')->fields('n', array('nid'))->condition('type', 'nids' ,'=')->execute()->fetchAll();
