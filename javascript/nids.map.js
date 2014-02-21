@@ -9,7 +9,17 @@
 
     attach: function() {
       this.addByName();
-      this.geography = $("input[name='geography']");
+      // if($("input[name='geography']").length!=0){
+      //   this.geography=$("input[name='geography']").val();
+      //   this.readGeoJSON();
+      // }else{
+      //   self=this;
+      //   $("input[name='geography[]']").each(function(){
+      //     self.geography=$(this);
+      //     self.readGeoJSON();
+      //   });
+      // }
+      this.geography=$("input[name='geography']");
       this.createMap();
       this.readGeoJSON();
       this.attachEvents();
