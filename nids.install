@@ -268,7 +268,7 @@ return $schema;
  * Implements hook_uninstall().
  */
 function nids_uninstall() {
-  //db_drop_table('nids_users');
+  db_drop_table('nids_users');
   db_drop_table('nids_nichoirs');
   db_drop_table('nids_oiseaux_cour');
   /*$results = db_select('node', 'n')->fields('n', array('nid'))->condition('type', 'nids' ,'=')->execute()->fetchAll();
