@@ -8,17 +8,6 @@
     geography: "",
 
     attach: function() {
-      this.addByName();
-      // if($("input[name='geography']").length!=0){
-      //   this.geography=$("input[name='geography']").val();
-      //   this.readGeoJSON();
-      // }else{
-      //   self=this;
-      //   $("input[name='geography[]']").each(function(){
-      //     self.geography=$(this);
-      //     self.readGeoJSON();
-      //   });
-      // }
       this.geography=$("input[name='geography']");
       this.createMap();
       this.readGeoJSON();
@@ -232,7 +221,7 @@
     addMarker: function(position) {
       self=this;
       var marker = {};
-      self.clearOverlays();
+      //self.clearOverlays();
       marker = this.createMarker(position, this.marker_icon);
       this.markers.push(marker);
       this.buildGeoJSON();
