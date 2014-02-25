@@ -378,7 +378,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
       '#type' => 'hidden',
       '#size' => 100,
       '#required' => FALSE,
-      '#prefix' => '<div id="adresse" style="display:none;">'.$add.'</div><div class="nidsbox"><h2>'.t('Lieu du nichoir').'</h2>',
+      '#prefix' => '<div id="adresse" style="display:none;">'.$add.'</div><div class="nidsbox"></div><h2>'.t('Lieu du nichoir').'</h2>',
       //'#suffix' => '<div id="noloc" style="display:none;">'.t('Ce nom ne peut être reconnu!').'</div><button type="button" id="addbynamebut">'.t('Ajouter un marqueur à cet endroit sur la carte (OPTION 1)').'</button>',
       '#default_value' => isset($form['#node']->nichoir['site_details']['location_name']) ? $form['#node']->nichoir['site_details']['location_name'] : ""
       );
@@ -1282,10 +1282,17 @@ function nids_list(){
         'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 'habitat', 'hauteur', 'orientation'));
   $result = $query->execute();
   $output='';
+  $geog=array();
   foreach($result as $n){
-    $output.="<input type='hidden' name='geography' value='".$n->geography."'>";
+    $geo=json_decode($n->geography);
+    $geog[]=$geo->features[0];
+    //$output.="";
   }
-
+  $arr=array(
+    'type'=>'FeatureCollection',
+    'features' => $geog,
+    );
+  $output.="<input type='hidden' name='geography' value='".json_encode($arr)."'>";
   $output.='<div id="map" width="900" height="500" style="width:800px;height:500px;"></div><br><br>';
   $output.=nids_blocklist();
   return $output;
