@@ -1404,7 +1404,76 @@ function nids_block_view($block_name = '') {
       );
     return $block;
   }
+  
+  // Not sure what the name will be yet
+  elseif ($block_name == 'nids_something') {
+    $query3=db_select('nids_nichoirs_obs','t');
+    //$query2->join('nids_users', 'u', 't.uid = u.uid');
+    $query3->fields('t',array('obs_id', 'uid', 'nid_id', 'date_obs', 
+      'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
+    // this is for the join ->fields('u',array('prenom', 'nom_famille'));
+    
+    $result = $query3->execute();
+    $header = array(t('obs_id'), t('uid'), t('nid_id'), t('date_obs'), t('rien_vu'), 
+	t('oiseau_espece'), t('oiseau_espece_autre'), t('type_obs'), t('type_obs_autre'));
+    $rows = array();
 
+    foreach ($result as $node3) {
+      $isnode = node_load($node3->obs_id);
+      $options = array('absolute' => TRUE);
+      $url = url($node3->oiseau_espece, $options);
+      /*if(node_access('update',$node3->obs_id)){
+          $edit='<a href='.$url.'/edit>Edit</a>';
+      }else{
+        $edit='';
+      }
+      */
+      $rows[] = array($node3->obs_id, $node3->uid, $node3->nid_id, 
+	  $node3->date_obs, $node3->rien_vu, '<a href='.$url.'>'.$node3->oiseau_espece.'</a>', 
+	  $node3->oiseau_espece_autre, $node3->type_obs);
+    }
+
+    //Return the content of the block
+    $content=theme('table', array('header' => $header, 'rows' => $rows));
+    $block = array(
+      'subject' => t('List of nids observation in dans ta Cour datasets'),
+      'content' => $content,
+      );
+    return $block;
+  }
+  //*****************************************************************************
+    elseif ($block_name == 'nids_something2') {
+    $query4=db_select('nids_nichoir_type_obs','t');
+    //$query4->join('nids_users', 'u', 't.uid = u.uid');
+    $query4->fields('t',array('type_obs_id', 'type_obs_key', 'description'))
+    //->fields('u',array('prenom', 'nom_famille'));
+    
+    $result = $query4->execute();
+    $header = array(t('Type d\'Observation ID'), t('Type d\'Observation Key'), t('Description'));
+    $rows = array();
+
+    foreach ($result as $node4) {
+      $isnode = node_load($node4->obs_id);
+      $options = array('absolute' => TRUE);
+      //$url = url($node4->oiseau_espece, $options);
+      /*if(node_access('update',$node4->obs_id)){
+          $edit='<a href='.$url.'/edit>Edit</a>';
+      }else{
+        $edit='';
+      }
+      */
+      $rows[] = array($node4->type_obs_id, $node4->type_obs_key, $node4->description);
+    }
+
+    //Return the content of the block
+    $content=theme('table', array('header' => $header, 'rows' => $rows));
+    $block = array(
+      'subject' => t('List of nids observation in dans ta Cour datasets'),
+      'content' => $content,
+      );
+    return $block;
+  }
+  //*****************************************************************************
 }
 
 function quastuvu1_callback(){
