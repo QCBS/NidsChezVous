@@ -12,6 +12,9 @@
       this.createMap();
       this.readGeoJSON();
       this.attachEvents();
+      if ($("input[name='geography']").val().length == 0){
+        this.addByName();
+      }
     },
 
     createMap: function() {
@@ -232,7 +235,7 @@
 
     addMarkerListener: function(marker) {
       var self = this;
-      google.maps.event.addListener(marker, 'click', function() {
+      /*google.maps.event.addListener(marker, 'click', function() {
         $.each(self.markers, function(i) {
           marker.setMap(null);
           if(marker === this) {
@@ -241,6 +244,13 @@
           }
         });
       });
+*/
+      google.maps.event.addListener(marker, 'drag', function() {
+        $.each(self.markers, function(i) {
+            self.buildGeoJSON();
+        });
+      });
+
     },
 
     clearListeners: function(marker) {
@@ -327,7 +337,6 @@
           }else{
             self.map.setZoom(16);
           }
-          
         } else {
           $('#noloc').show(); 
         }
