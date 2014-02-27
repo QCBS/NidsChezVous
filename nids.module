@@ -1410,7 +1410,7 @@ function nids_block_view($block_name = '') {
     $query3=db_select('nids_nichoirs_obs','t');
     //$query2->join('nids_users', 'u', 't.uid = u.uid');
     $query3->fields('t',array('obs_id', 'uid', 'nid_id', 'date_obs', 
-      'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
+      'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'));
     // this is for the join ->fields('u',array('prenom', 'nom_famille'));
     
     $result = $query3->execute();
@@ -1445,7 +1445,7 @@ function nids_block_view($block_name = '') {
     elseif ($block_name == 'nids_something2') {
     $query4=db_select('nids_nichoir_type_obs','t');
     //$query4->join('nids_users', 'u', 't.uid = u.uid');
-    $query4->fields('t',array('type_obs_id', 'type_obs_key', 'description'))
+    $query4->fields('t',array('type_obs_id', 'type_obs_key', 'description'));
     //->fields('u',array('prenom', 'nom_famille'));
     
     $result = $query4->execute();
