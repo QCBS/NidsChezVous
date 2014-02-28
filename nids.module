@@ -377,7 +377,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
 
     if ($adresse->rowCount()>0){
       $adresse=$adresse->fetchAssoc();
-      $add=$adresse['adresse'].', '.$adresse['ville'];
+      $add=$adresse['adresse'].', '.$adresse['code_postal'].', '.$adresse['ville'];
     }else{
       $add='';
     }
@@ -402,7 +402,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
       <div id="coorderror" style="display:none;">'.t('Coordonnées non reconnues!').'</div>
     </p>',
     */
-    '#prefix' => '<h3>'.t('Situe le nichoir en déplacant le marqueur rouge sur la carte').'</h3><div id="map" style="width:700px;height:500px;"></div></div>',
+    '#prefix' => '<h3>'.t('Situe le nichoir en déplacant le marqueur (icône de nichoir orange) sur la carte').'</h3><div id="map" style="width:700px;height:500px;"></div></div>',
     
     /*<p><button type="button" id="pointbut">'.t('Ajoute un nichoir en cliquant sur la carte').'</button>
     <button type="button" id="nids-clear">'.t('Effacer').'</button>
@@ -440,7 +440,7 @@ $form['hauteur'] = array(
   );
 
 $form['trou'] = array(
-  '#title' => t("Quelle est la taille du trou (en millimètres) dans le nichoir?"),
+  '#title' => t("Quelle est la taille du trou (en centimètres) dans le nichoir?"),
   '#type' => 'textfield',
   '#required' => FALSE,
   '#default_value' => '',
@@ -1320,13 +1320,20 @@ function nids_map($width,$height){
   $result = $query->execute();
   $output='';
   $geog=array();
-
   foreach($result as $n){
+    $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs'))->condition('nid_id',$n->nid_id,'=')->orderBy('obs_id', 'DESC')->execute()->fetchField();
+    if($nob[0]<9){
+      $ut=1; //Utilisé!
+    }else{
+      $ut=0; //Non Utilisé
+    }
+    debug($nob);
     $iw="<div><h2><b>".(($n->dncv_no!='')?$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc:'').(($n->ecole!='')?$n->ecole:'')."</div>Date d&#39;installation: ".$n->date_installation."</div>";
     $geo=json_decode($n->geography);
     $geo->features[0]->properties=array(
       'nid_id'=>$n->nid_id,
       'infowin'=>$iw,
+      'utilise'=>$ut,
       );    
     $geog[]=$geo->features[0];
     //$output.="";

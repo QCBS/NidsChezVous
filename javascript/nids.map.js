@@ -46,7 +46,7 @@
         switch (this.geometry.type) {
           case 'Point':
             contentString=this.properties.infowin;
-            self.addMarker(self.createPoint(this.geometry.coordinates),contentString);
+            self.addMarker(self.createPoint(this.geometry.coordinates),contentString,this.properties.utilise);
           break;
 
           case 'Polygon':
@@ -228,12 +228,24 @@
       });
     },
 
-    addMarker: function(position,contentString) {
+    addMarker: function(position,contentString,utilise) {
       self=this;
       var marker = {};
       var infowindow = {};
       //self.clearOverlays();
-      marker = this.createMarker(position, this.marker_icon);
+      if(utilise==1){
+        marker_icon = {
+        url: Drupal.settings.nids_path + '/images/marqueur_occupe.png',
+        origin: new google.maps.Point(0,0)
+        }
+      }else{
+        marker_icon = {
+        url: Drupal.settings.nids_path + '/images/marqueur_non_occupe.png',
+        origin: new google.maps.Point(0,0)
+        }
+      }
+
+      marker = this.createMarker(position, marker_icon);
       infowindow = this.createInfoWindow(contentString);
       this.markers.push(marker);
       this.infowindows.push(infowindow);
