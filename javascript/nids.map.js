@@ -5,7 +5,7 @@
 
     map: {}, map_center: {}, marker_icon: {}, polygon_icon: {},
     markers: [], polygons: [], polygon_vertices: [],
-    geography: "",
+    geography: "", infowindows: [],
 
     attach: function() {
       this.geography=$("input[name='geography']");
@@ -26,7 +26,7 @@
         disableDoubleClickZoom: true
       });
       this.marker_icon = {
-        url: Drupal.settings.nids_path + '/images/red-dot.png',
+        url: Drupal.settings.nids_path + '/images/marqueur_non_occupe.png',
         origin: new google.maps.Point(0,0)
       };
       this.polygon_icon = {
@@ -45,7 +45,8 @@
       $.each(geojson.features, function() {
         switch (this.geometry.type) {
           case 'Point':
-            self.addMarker(self.createPoint(this.geometry.coordinates));
+            contentString=this.properties.infowin;
+            self.addMarker(self.createPoint(this.geometry.coordinates),contentString);
           break;
 
           case 'Polygon':
@@ -221,15 +222,26 @@
       });
     },
 
-    addMarker: function(position) {
+    createInfoWindow: function(contentString) {
+      return new google.maps.InfoWindow({
+        content: contentString
+      });
+    },
+
+    addMarker: function(position,contentString) {
       self=this;
       var marker = {};
+      var infowindow = {};
       //self.clearOverlays();
       marker = this.createMarker(position, this.marker_icon);
+      infowindow = this.createInfoWindow(contentString);
       this.markers.push(marker);
+      this.infowindows.push(infowindow);
       this.buildGeoJSON();
       if(this.isEditMode()) {
         this.addMarkerListener(marker);
+      }else{
+        this.addMarkerInfoWindowListener(marker,infowindow);
       }
     },
 
@@ -251,6 +263,16 @@
         });
       });
 
+    },
+
+    addMarkerInfoWindowListener: function(marker,infowindow) {
+      var self = this;
+      google.maps.event.addListener(marker, 'click', function() {
+        $.each(self.infowindows, function() {
+           this.close();
+        });
+        infowindow.open(this.map,marker);
+      });
     },
 
     clearListeners: function(marker) {
