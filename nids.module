@@ -1327,7 +1327,6 @@ function nids_map($width,$height){
     }else{
       $ut=0; //Non Utilisé
     }
-    debug($nob);
     $iw="<div><h2><b>".(($n->dncv_no!='')?$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc:'').(($n->ecole!='')?$n->ecole:'')."</div>Date d&#39;installation: ".$n->date_installation."</div>";
     $geo=json_decode($n->geography);
     $geo->features[0]->properties=array(
@@ -1417,10 +1416,10 @@ function nids_block_view($block_name = '') {
 
     if ($isscientist){
       $header = array(t('Numéro/Nom du Nichoir'),t('Participant'), t('Nom du Nichoir'), t('Localisation'), 
-        t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'));
+        t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));
     }else{
       $header = array(t('Numéro/Nom du Nichoir'),t('Localisation'), 
-       t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'));
+       t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));
     }
     foreach ($result as $node1) {
       $isnode = node_load($node1->nid_id);
@@ -1443,11 +1442,18 @@ function nids_block_view($block_name = '') {
     }else{
       $nonnumero=$node1->dncv_no;
     }
+    $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs'))->condition('nid_id',$node1->nid_id,'=')->orderBy('obs_id', 'DESC')->execute()->fetchField();
+    if($nob[0]<9){
+      $ut='Oui'; //Utilisé!
+    }else{
+      $ut='Non'; //Non Utilisé
+    }
+
 
     if ($isscientist){
-      $rows[] = array('<a href='.$url.'>'.($node1->dncv_no=='')?$node1->dncv_no:$node1->nom_nichoir.'</a>', $node1->prenom. ' ' .$node1->nom_famille, $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation, $edit);
+      $rows[] = array('<a href='.$url.'>'.($node1->dncv_no=='')?$node1->dncv_no:$node1->nom_nichoir.'</a>', $node1->prenom. ' ' .$node1->nom_famille, $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation,$ut,$edit);
     } else {
-      $rows[] = array('<a href='.$url.'>'.($node1->dncv_no=='')?$node1->dncv_no:$node1->nom_nichoir.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation);
+      $rows[] = array('<a href='.$url.'>'.($node1->dncv_no=='')?$node1->dncv_no:$node1->nom_nichoir.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation,$ut);
     } 
   }
     //Return the content of the block
@@ -1506,6 +1512,7 @@ function nids_block_view($block_name = '') {
       t('Oiseau Èspece Autre'), t('Type d\'Observation'), t('Type d\'Observation Autre'));
 
     foreach ($result as $node3) {
+
       $isnode = node_load($node3->obs_id);
       $options = array('absolute' => TRUE);
       $url = url($node3->oiseau_espece, $options);
