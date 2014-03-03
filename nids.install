@@ -66,9 +66,9 @@ function nids_schema() {
 $schema['nids_nichoirs'] = array(
   'description' => 'Des nids chez vous users data.',
   'fields' => array(
-    'nid_id' => array(
+    'nid' => array(
       'description' => 'ID unique pour chaque nichoir',
-      'type' => 'serial',
+      'type' => 'int',
       'unsigned' => TRUE,
       'not null' => TRUE,
       ),

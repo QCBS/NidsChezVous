@@ -45,6 +45,12 @@ function nids_schema() {
         'description' => 'Code postal',
         'type' => 'varchar',
         'length' => 8),
+      'mangeoires' => array(
+        'description' => 'Avez vous de mangeoires?',
+        'type' => 'int'),
+      'mangeoires_nombre' => array(
+        'description' => 'Combien de mangeoires',
+        'type' => 'int'),
       ),
 'indexes' => array(
   'node_dataset' => array('uid')
@@ -60,9 +66,9 @@ function nids_schema() {
 $schema['nids_nichoirs'] = array(
   'description' => 'Des nids chez vous users data.',
   'fields' => array(
-    'nid_id' => array(
+    'nid' => array(
       'description' => 'ID unique pour chaque nichoir',
-      'type' => 'serial',
+      'type' => 'int',
       'unsigned' => TRUE,
       'not null' => TRUE,
       ),
@@ -112,6 +118,10 @@ $schema['nids_nichoirs'] = array(
       ),
     'hauteur' => array(
       'description' => "Hauteur du nichoir",
+      'type' => 'float',
+      ),
+    'trou' => array(
+      'description' => "Diamètre du trou",
       'type' => 'float',
       ),
     'orientation' => array(
@@ -262,9 +272,10 @@ return $schema;
  * Implements hook_uninstall().
  */
 function nids_uninstall() {
-  db_drop_table('nids_users');
+  //db_drop_table('nids_users');
   db_drop_table('nids_nichoirs');
   db_drop_table('nids_oiseaux_cour');
+  db_drop_table('nids_nichoir_type_obs');
   /*$results = db_select('node', 'n')->fields('n', array('nid'))->condition('type', 'nids' ,'=')->execute()->fetchAll();
   foreach($results as $result) {
     node_delete($result->nid);
@@ -290,12 +301,7 @@ function nids_install() {
   $mnode = node_submit($mnode); // Prepare node for saving
   node_save($mnode);
   */
-  $menu = array(
-    'menu_name' => 'quastuvu',
-    'title' => "Qu'as-tu vu?",
-    'description' => 'Menu observations'
-    );
-  menu_save($menu);
+  //menu_save($menu);
   cache_clear_all('*', 'cache_menu', TRUE);
   $typeobs=_nichoir_type_observation();
   foreach($typeobs as $key=>$value){
