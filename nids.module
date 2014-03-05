@@ -184,7 +184,18 @@ function nids_menu() {
     'type' => MENU_NORMAL_ITEM,
     'page callback' => 'nids_block_obsv_list',
     );
-
+    
+    //nids_oiseaux_cour_list
+   $items['explorer/nids_obsv2'] = array(
+    'title'           => t('Liste d\'observation2'),
+    'description'     => t('Liste d\'observation2'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('access content'),
+    'weight'          => 9,
+    'access callback' => 'user_access',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'nids_obsv',
+    );
   return $items;
 }
 
@@ -1213,11 +1224,8 @@ function nids_obsv3(){
 	$block = module_invoke('nids', 'block_view', 'nids_nichoirs_obs_list_view');
 	return $block['content'];
 }
-function nids_block_obsv_list(){
-	$output ='';
-	$output .= nids_obsv();
-	$output .= nids_obsv2();
-	return $output;
+function nids_block_obsv_list(){ 
+	return nids_obsv2();
 }
 
 function nids_blocklist(){
