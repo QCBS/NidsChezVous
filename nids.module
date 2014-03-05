@@ -10,7 +10,7 @@ function nids_node_info() {
     'base'        => 'nichoir',
     'module'      => 'nids',
     'description' => t('Ajout observations nichoir.'),
-    'has_body'    => FALSE
+    'has_body'    => TRUE
     );
   return $info;
 }
@@ -212,8 +212,12 @@ function nids_preprocess_page(&$variables) {
 }
 
 
-
-
+function nids_node_view($node, $view_mode, $langcode) {
+  $node->content['my_additional_field'] = array(
+    '#markup' => '<h1>HELLOO</h1>',
+    '#weight' => 10,
+  );
+}
 /**
  * Implements hook_theme().
  */
