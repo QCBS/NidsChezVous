@@ -262,8 +262,33 @@ $schema['nids_nichoir_type_obs'] = array(
   'primary key' => array('type_obs_id'),
 );
 
-
-
+$schema['nids_oiseaux_pic'] = array(
+  'description' => 'A DB that will store all of our pictures(links) for our birds',
+  'fields' => array(
+    'oiseaux_id' => array(
+      'description' => 'ID unique pour les oiseaux',
+      'type' => 'serial',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      ),
+    'oiseaux_name' => array(
+      'description' => 'The name of the bird',
+      'type' => 'varchar',
+      'length'=> '255',
+      ),
+    'description' => array(
+      'description' => 'A link for a description of the bird',
+      'type' => 'varchar',
+      'length'=> '500',
+      ),
+    'oiseaux_link' => array(
+      'description' => 'The link to witch the birds photo will come from',
+      'type' => 'varchar',
+      'length'=> '500',
+      ),
+    ),
+  'primary key' => array('oiseaux_id'),
+);
 
 return $schema;
 }
@@ -276,6 +301,7 @@ function nids_uninstall() {
   db_drop_table('nids_nichoirs');
   db_drop_table('nids_oiseaux_cour');
   db_drop_table('nids_nichoir_type_obs');
+  db_drop_table('nids_oiseaux_pic');
   /*$results = db_select('node', 'n')->fields('n', array('nid'))->condition('type', 'nids' ,'=')->execute()->fetchAll();
   foreach($results as $result) {
     node_delete($result->nid);
@@ -310,9 +336,18 @@ function nids_install() {
         'description'=>$value,
       ))->execute();
   }
+  $oiseauxPic = _observation_oiseaux();
+  foreach($oiseauxPic["Espèces communes"] as $key=>$value){
+  		db_insert('nids_oiseaux_pic')
+  		->fields(array('oiseaux_name'=>$key))
+  		->execute();
+  }
+  foreach($oiseauxPic["Autres espèces"] as $key=>$value){
+  		db_insert('nids_oiseaux_pic')
+  		->fields(array('oiseaux_name'=>$key))
+  		->execute();
+  }
 }
-
-
 
 
 ?>
