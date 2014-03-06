@@ -186,7 +186,7 @@ function nids_menu() {
     );
     
     //nids_oiseaux_cour_list
-   $items['explorer/nids_obsv2'] = array(
+   $items['explorer/observation_oiseaux'] = array(
     'title'           => t('Liste d\'observation2'),
     'description'     => t('Liste d\'observation2'),
     'menu_name'       => 'main-menu',
@@ -194,7 +194,7 @@ function nids_menu() {
     'weight'          => 9,
     'access callback' => 'user_access',
     'type' => MENU_NORMAL_ITEM,
-    'page callback' => 'nids_obsv2',
+    'page callback' => 'nids_block_obs_oiseaux',
     );
   return $items;
 }
@@ -1209,20 +1209,18 @@ function nids_form_validate($form, &$form_state){
 /**
  * Implements hook_block_view().
  */
-function nids_obsv(){
+function nids_block_obs_oiseaux(){
 	$block = module_invoke('nids', 'block_view', 'nids_oiseaux_cour_list');
 	return $block['content'];
 }
-function nids_obsv2(){
-	$block = module_invoke('nids', 'block_view', 'nids_nichoirs_obs_list');
-	return $block['content'];
-}
+
 function nids_obsv3(){
 	$block = module_invoke('nids', 'block_view', 'nids_nichoirs_obs_list_view');
 	return $block['content'];
 }
 function nids_block_obsv_list(){ 
-	return nids_obsv2();
+	$block = module_invoke('nids', 'block_view', 'nids_nichoirs_obs_list');
+	return $block['content'];
 }
 
 function nids_blocklist(){
@@ -1319,6 +1317,13 @@ function nids_block_info() {
 function nids_block_view($block_name = '') {
   $rows = array();
   $header = array();
+  global $user;
+    $user_role=db_select('users_roles','r')
+    ->fields('r',array('rid'))
+    ->condition('uid', $user->uid,'=')
+    ->execute()
+    ->fetchField();
+  $isscientist=($user_role==3 || $user_role==6);
   
   if ($block_name == 'nids_list_nichoirs') {
     $query = db_select('nids_nichoirs', 'n');
@@ -1356,10 +1361,8 @@ function nids_block_view($block_name = '') {
      $nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : $node1->dncv_no;
     $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchField();
     $ut = ($nob[0]<9)?'Oui':'Non';
-    $isscientist=($user_role==3 || $user_role==6);
     
     if ($isscientist){
-    	
       $header = array(t('Numéro/Nom du Nichoir'),t('Participant'), t('Localisation'), 
       t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));      
       $rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', 
@@ -1386,7 +1389,7 @@ function nids_block_view($block_name = '') {
       );
     return $block;
   }
-  
+  //wasnt working cause I added one as an admin...
   elseif ($block_name == 'nids_oiseaux_cour_list') {
     $query2=db_select('nids_oiseaux_cour','t');
     $query2->join('nids_users', 'u', 't.uid = u.uid');
@@ -1395,21 +1398,21 @@ function nids_block_view($block_name = '') {
     ->fields('u',array('prenom', 'nom_famille'));
     
     $result = $query2->execute();
-    $header = array(t('Nom'), t('Date d\'observation'), t('Durée d\'observation'), t('Èspece'), t('Nombre d\'individus'));
 
     foreach ($result as $node2) {
       $isnode = node_load($node2->obs_id);
       $options = array('absolute' => TRUE);
       $url = url($node2->oiseau_espece, $options);
-      /*
-      if(node_access('update',$node2->obs_id)){
-          $edit='<a href='.$url.'/edit>Edit</a>';
-      }else{
-        $edit='';
-      }
-  		*/
-      ($node2->rien_vu == 1)? $oiseau = 'Rien observé' : $oiseau = $node2->oiseau_espece; 
+      ($node2->rien_vu == 1)? $oiseau = 'Rien observé' : $oiseau = $node2->oiseau_espece;
+    
+    if ($isscientist){
+      $header = array(t('Participant'),t('Date d\'observation'), t('Durée d\'observation'), t('Espèce'),t('Nombre d\'individus'));      
       $rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
+    }
+    else {
+      $header = array(t('Date d\'observation'), t('Durée d\'observation'), t('Espèce'),t('Nombre d\'individus'));      
+      $rows[] = array($node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
+    	}
     }
 
     //Return the content of the block
@@ -1429,7 +1432,7 @@ function nids_block_view($block_name = '') {
     ->fields('u',array('prenom', 'nom_famille'));
 
     $result = $query3->execute();
-    $header = array(t('Nom'), t('Date d\'Observation'), t('Oiseau Èspece'), t('Type d\'Observation'));
+    
 
     foreach ($result as $node3) {
 
@@ -1447,9 +1450,15 @@ function nids_block_view($block_name = '') {
       	$myObs = 'J\' ai rien vu';
       	$typeObsv = 'Aucune';
       }
-
-      $rows[] = array($node3->prenom. ' ' .$node3->nom_famille,
-        $node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+  		if ($isscientist){
+      	$rows[] = array($node3->prenom. ' ' .$node3->nom_famille,
+        	$node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+        	$header = array(t('Participant'), t('Date d\'observation'), t('Oiseau èspece'), t('Type d\'observation'));
+     	}
+ 		else {
+ 			$rows[] = array($node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+ 			$header = array(t('Date d\'observation'), t('Oiseau èspece'), t('Type d\'observation'));
+     	}
     }
 
     //Return the content of the block
@@ -1493,7 +1502,7 @@ function nids_block_view($block_name = '') {
     ->condition('nid_id',$myNode2,'=');
 
     $result = $query5->execute();
-    $header = array(t('Nom'), t('Date d\'Observation'), t('Oiseau Èspece'), t('Type d\'Observation'));
+    
 
     foreach ($result as $node3) {
 
@@ -1511,9 +1520,16 @@ function nids_block_view($block_name = '') {
       	$myObs = 'J\' ai rien vu';
       	$typeObsv = 'Aucune';
       }
+  		if ($isscientist){
+  			$rows[] = array($node3->prenom. ' ' .$node3->nom_famille,
+   	   $node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+        	$header = array(t('Participant'), t('Date d\'Observation'), t('Oiseau Èspece'), t('Type d\'Observation'));
+     	}
+ 		else {
+ 			$rows[] = array($node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+ 			$header = array(t('Date d\'Observation'), t('Oiseau Èspece'), t('Type d\'Observation'));
+     	}
 
-      $rows[] = array($node3->prenom. ' ' .$node3->nom_famille,
-        $node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
     }
 
     //Return the content of the block
