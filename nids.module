@@ -139,9 +139,20 @@ function nids_menu() {
     'description'     => t('Inscription'),
     'menu_name'       => 'main-menu',
     'access arguments' => array('access content'),
-    'weight'          => 4,
-    'access callback' => 'user_access',
+    'weight'          => 10,
+    'access callback' => 'user_is_anonymous',
     'page callback' => 'inscription_callback',
+    'type' => MENU_NORMAL_ITEM,
+    );
+
+  $items['connexion'] = array(
+    'title'           => t("Se connecter"),
+    'description'     => t('Connexion'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('access content'),
+    'weight'          => 11,
+    'access callback' => 'user_is_anonymous',
+    'page callback' => 'connexion_callback',
     'type' => MENU_NORMAL_ITEM,
     );
 
@@ -163,9 +174,21 @@ function nids_menu() {
     'page callback' => 'nids_list',
     );
 
+
+  $items['explorer/mes_nichoirs'] = array(
+    'title'           => t('Mes nichoirs'),
+    'description'     => t('Mes nichoirs'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('create nichoir content'),
+    'weight'          => 7,
+    'access callback' => 'user_access',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'own_nichoirs_list',
+    );
+
   $items['explorer/liste_nids'] = array(
-    'title'           => t('Liste des nichoirs'),
-    'description'     => t('Liste des nichoris'),
+    'title'           => t('Liste complète des nichoirs'),
+    'description'     => t('Liste complète des nichoirs'),
     'menu_name'       => 'main-menu',
     'access arguments' => array('create nichoir content'),
     'weight'          => 8,
@@ -174,11 +197,12 @@ function nids_menu() {
     'page callback' => 'nids_list',
     );
 
+
   $items['explorer/nids_obsv'] = array(
-    'title'           => t('Liste d\'observation'),
-    'description'     => t('Liste d\'observation'),
+    'title'           => t('Observations dans les nichoirs'),
+    'description'     => t('Observations dans les nichoirs'),
     'menu_name'       => 'main-menu',
-    'access arguments' => array('create nichoir content'),
+    'access arguments' => array('delete all nichoir content'),
     'weight'          => 9,
     'access callback' => 'user_access',
     'type' => MENU_NORMAL_ITEM,
@@ -187,10 +211,10 @@ function nids_menu() {
     
     //nids_oiseaux_cour_list
    $items['explorer/observation_oiseaux'] = array(
-    'title'           => t('Liste d\'observation2'),
-    'description'     => t('Liste d\'observation2'),
+    'title'           => t('Observations dans les cours'),
+    'description'     => t('Observations dans les cours'),
     'menu_name'       => 'main-menu',
-    'access arguments' => array('access content'),
+    'access arguments' => array('delete all nichoir content'),
     'weight'          => 9,
     'access callback' => 'user_access',
     'type' => MENU_NORMAL_ITEM,
@@ -341,6 +365,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
         'Parc La gare' => 'Parc La gare',
         'Parc Mont-Saint-Louis' => 'Parc Mont-Saint Louis',
         'Parc Mairie Saint-Anaclet' => 'Parc Mairie Saint-Anaclet',
+        'Bibliothèque Lisette-Morin' =>'Bibliothèque Lisette-Morin',
         ),
       '#required' => FALSE,
       '#states' => array(
@@ -422,6 +447,7 @@ $form['date_installation'] = array(
   '#type' => 'date_popup',
   '#date_format' => 'Y-m-d',
   '#size' => 30,
+  '#datepicker_options' => array('maxDate' => date('Y-m-d H:i')),
   '#title' => "Date de l'installation du nichoir",
   '#required' => FALSE,
   '#default_value' => isset($form['#node']->date_installation) ? $form['#node']->date_installation : ""
@@ -681,11 +707,11 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => array(
       null => 'Choisir...',
-      'Lepage' => 'Lepage',
       'Beauséjour' => 'Beauséjour',
       'La gare' => 'La gare',
       'Mont-Saint-Louis' => 'Mont-Saint Louis',
       'Mairie Saint-Anaclet' => 'Mairie Saint-Anaclet',
+      'Bibliothèque Lisette-Morin' =>'Bibliothèque Lisette-Morin',
       ),
     '#required' => FALSE,
     '#states' => array(
@@ -733,25 +759,19 @@ function nids_obsnichoir_form($form, &$form_state) {
   global $user;
   $nidsopts=array(0 => 'Choisir....');
   if(!array_key_exists('values',$form_state)){
-    $form_state['values']['parc']='';
-    $form_state['values']['ecole']='';
+    $form_state['values']['parc']='nothing';
+    $form_state['values']['ecole']='nothing';
   }
   if($path==='parc'){
     $nichoirs=db_select('nids_nichoirs','n')
     ->fields('n')
     ->condition('parc',$form_state['values']['parc'],'=')
     ->execute();
-    $nidsopts=array(0=>'Choisir...',
-      444=>'Nichoir fictif 1',
-      445=>'Nichoir fictif 2');
   }else if ($path==='nichoir_ecole'){
     $nichoirs=db_select('nids_nichoirs','n')
     ->fields('n')
     ->condition('ecole',$form_state['values']['ecole'],'=')
     ->execute();
-    $nidsopts=array(0=>'Choisir...',
-      444=>'Nichoir fictif 1',
-      445=>'Nichoir fictif 2');
   }else{
     $nichoirs=db_select('nids_nichoirs','n')
     ->fields('n')
@@ -784,7 +804,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => $nidsopts,
     '#required' => TRUE,
-    '#default_value' => 'Choisir',
+    '#default_value' => 0,
     );
 
   $form['date'] = array(
@@ -793,7 +813,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#size' => 30,
     '#title' => "Date et heure (sur 24h) de l'observation",
     '#required' => TRUE,
-    //'#datepicker_options' => array('appendText' => '(sur 24h)'),
+    '#datepicker_options' => array('maxDate' => date('Y-m-d H:i')),
     '#states' => array(
       'visible' => array(
         ':input[name="nichoir"]' => array('!value' => 0),
@@ -841,7 +861,7 @@ function nids_obsnichoir_form($form, &$form_state) {
   $form['espece_autre'] = array(
     '#type' => 'textfield',
     '#size' => 70,
-    '#title' => '<h4>'.t("Veuillez préciser l'espèce...").'</h4>',
+    '#title' => '<h4>'.t("Veuillez préciser l'espèce:").'</h4>',
     '#states' => array(
       'visible' => array(
         ':input[name="espece"]' => array('value' => 'Autre'),
@@ -868,7 +888,7 @@ function nids_obsnichoir_form($form, &$form_state) {
   $form['type_obs_autre'] = array(
     '#type' => 'textfield',
     '#size' => 70,
-    '#title' => '<h4>'.t("Veuillez préciser...").'</h4>',
+    '#title' => '<h4>'.t("Veuillez préciser.").'</h4>',
     '#states' => array(
       'visible' => array(
         ':input[name="type_obs"]' => array('value' => 10),
@@ -876,19 +896,7 @@ function nids_obsnichoir_form($form, &$form_state) {
         ),
       ),
     );
-  /*
-  $form['nombre_visite'] = array(
-    '#type' => 'textfield',
-    '#size' => 70,
-    '#title' => '<h4>'.t("Qu'avez-vous vu?").'</h4>',
-    '#states' => array(
-      'visible' => array(
-        ':input[name="type_obs"]' => array('value' => 8),
-        ':input[name="esp"]' => array('!value' => 'Choisir'),
-        ),
-      ),
-    );
-    */
+
 $form['submit'] = array(
   '#type' => 'submit',
   '#value' => t("Ajouter l'observation!"),
@@ -919,6 +927,7 @@ function nids_obscour_form($form, &$form_state) {
     '#date_format' => 'Y-m-d H:i',
     '#size' => 30,
     '#title' => "Date et heure de l'observation",
+    '#datepicker_options' => array('maxDate' => date('Y-m-d H:i')),
     '#required' => TRUE,
     );
 
@@ -931,7 +940,8 @@ function nids_obscour_form($form, &$form_state) {
   $form['duree_obs'] = array(
     '#type' => 'textfield',
     '#size' => 50,
-    '#title' => '<h4>'.t("Indiquer la durée de la période d'observation (en minutes)...").'</h4>',
+    '#title' => '<h4>'.t("Indiquer la durée de la période d'observation (en minutes).").'</h4>',
+    '#required' => TRUE,
     );
 
   $form['oiseau'] = array(
@@ -964,14 +974,13 @@ function nids_obscour_form($form, &$form_state) {
 '#required' => FALSE,
 '#multiple' => TRUE,
 '#size' => 10,
-'#default_value' => 'Choisir',
 '#prefix' => '<tr><td><div class="sameline">',
 '#suffix' => '</div>',
 );
 $form['oiseau']['nombre_individus_'.$i] = array(
   '#type' => 'textfield',
   '#size' => 10,
-  '#title' => '<h4>'.t("Indiquer le nombre maximal d'individus observés (approximatif pour les grands nombres)").'</h4>',
+  '#title' => '<h4>'.t("Indiquer le nombre d'individus observés (approximatif pour les grands nombres)").'</h4>',
   '#suffix' => '</td></tr>',
   '#states' => array(
     'visible' => array(
@@ -987,7 +996,6 @@ $form['ajout_espece'] = array(
   '#value' => t("Autre espèce observée"),
   '#states' => array(
     'visible' => array(
-      ':input[name="espece"]' => array('!value' => 'Choisir'),
       ':input[name="rien_vu"]' => array('checked' => FALSE),
       ),
     ),
@@ -1046,7 +1054,7 @@ function nids_user_insert(&$edit, $account, $category) {
     'uid' => $account->uid,
     'rid' => $edit['type_utilisateur'],
     ))->execute();
-  drupal_set_message('Veuillez vérifier vos courriels pour valider l\'inscription!','status');
+  drupal_set_message('Vous êtes maintenant inscrit et connecté!','status');
 }
 
 function nids_user_update(&$edit, $account, $category) {
@@ -1062,7 +1070,10 @@ function nids_user_update(&$edit, $account, $category) {
     'mangeoires' => $edit['mangeoires'],
     'mangeoires_nombre' => ($edit['mangeoires_nombre']=='')?null:$edit['mangeoires_nombre'],
     ))->condition('uid', $account->uid,'=')->execute();
-  db_update('users_roles')->fields(array('rid' => $edit['type_utilisateur']))->condition('uid', $account->uid,'=')->execute();
+  $rid=db_select('users_roles','u')->fields('u',array('rid'))->execute()->fetchField();
+  if($rid!=3){ // not already an admin!
+    db_update('users_roles')->fields(array('rid' => $edit['type_utilisateur']))->condition('uid', $account->uid,'=')->execute();
+  }
   drupal_set_message('Profil mis à jour!','status');
 }
 
@@ -1095,6 +1106,10 @@ function nichoir_form_validate($form, &$form_state) {
  if (is_numeric($form_state['values']['hauteur'])==false & $form_state['values']['hauteur']!='') {
   form_set_error('hauteur', t('Veuillez entrer un chiffre pour la hauteur!'));
 }
+ if ($form_state['values']['numero']=='' & $form_state['values']['nom_nichoir']=='') {
+  form_set_error('numero', t('Veuillez spécifier un nom ou un numéro au nichoir!'));
+}
+
 }
 
 // Form submit handler.
@@ -1116,13 +1131,17 @@ function nichoir_insert($node) {
     'orientation' => $node->orientation,
     ))->execute();
 	drupal_set_message('Nichoir ajouté!','status');
-	drupal_goto('explorer');
+	drupal_goto('explorer/mes_nichoirs');
 }
 
 
 // Form submit handler.
 function nichoir_form_submit($form, &$form_state) {
-
+if ($form_state['values']['numero']==''){
+  $form_state['values']['title']=$form_state['values']['nom_nichoir'];
+}else{
+  $form_state['values']['title']=$form_state['values']['numero'];
+}
 }
 
 // Form validation handler.
@@ -1145,13 +1164,14 @@ function cour_form_submit($form, &$form_state) {
       'uid' => $user->uid,
       'date_obs' => $form_state['values']['date'],
       'rien_vu' => $form_state['values']['rien_vu'],
-      'duree_obs' => $form_state['values']['duree_obs'],
+      'duree_obs' => ($form_state['values']['duree_obs']=='')?null:$form_state['values']['duree_obs'],
       'oiseau_espece' => key($form_state['values']['espece_'.$i]),
       'nombre_individus' => ($form_state['values']['nombre_individus_'.$i]=='')?null:$form_state['values']['nombre_individus_'.$i],
       )
     )->execute();
   }
   drupal_set_message('Observation ajoutée!','status');
+ drupal_goto('observation');
 }
 
 function nids_obsnichoir_form_validate($form, &$form_state){
@@ -1193,7 +1213,7 @@ function nichoir_update($node) {
     ))->condition('nid', $node->nid, '=')
     ->execute();
 		}
-	drupal_set_message('Nichoir mis à jour!');
+  drupal_set_message('Nichoir mis à jour!');
 	drupal_goto('observation');
 }
 
@@ -1228,8 +1248,18 @@ function nids_blocklist(){
   return $block['content'];
 }
 
+function nids_own_blocklist(){
+  $block = module_invoke('nids', 'block_view', 'nids_list_own_nichoirs');
+  return $block['content'];
+}
+
 function nids_list(){
   $output=nids_map(900,500).nids_blocklist();
+  return $output;
+}
+
+function own_nichoirs_list(){
+  $output=nids_own_blocklist();
   return $output;
 }
 
@@ -1243,13 +1273,19 @@ function nids_map($width,$height){
   $output='';
   $geog=array();
   foreach($result as $n){
-    $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs'))->condition('nid_id',$n->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchField();
-    if($nob[0]<9){
-      $ut=1; //Utilisé!
-    }else{
+    $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs','oiseau_espece'))->condition('nid_id',$n->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchAssoc();
+    if($nob['type_obs'] >= 9 || $nob['type_obs']==''){
       $ut=0; //Non Utilisé
+      $sp='';
+    }else{
+      $ut=1; //Utilisé!
+      //$sp='';
+      $sp=htmlentities($nob['oiseau_espece'],ENT_QUOTES);
     }
-    $iw="<div><h2><b>".(($n->dncv_no!='')?$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc:'').(($n->ecole!='')?$n->ecole:'')."</div>Date d&#39;installation: ".$n->date_installation."</div>";
+    $iw="<div><h2><b>".(($n->dncv_no!='')?$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc.'<br>':'').(($n->ecole!='')?$n->ecole.'<br>':'')."Date d&#39;installation: ".$n->date_installation."</div></div><br>";
+    if($ut==1){
+      $iw.='<b>Utilisé!<br>'.$sp.'</b>';
+    }
     $geo=json_decode($n->geography);
     $geo->features[0]->properties=array(
       'nid'=>$n->nid,
@@ -1308,6 +1344,14 @@ function nids_block_info() {
    'visibility' => BLOCK_VISIBILITY_LISTED,
    'pages' => 'nids_oiseaux_cour_list'
    );
+  $blocks['nids_list_own_nichoirs'] = array(
+   'info' => t('A block to show your own nichoir'),
+   'cache' => DRUPAL_NO_CACHE,
+   'region' => 'content',
+   'status' => TRUE,
+   'visibility' => BLOCK_VISIBILITY_LISTED,
+   'pages' => 'explorer/mes_nichoirs'
+   );
   return $blocks;
 }
 
@@ -1359,9 +1403,13 @@ function nids_block_view($block_name = '') {
 	  		$parcecole='Cours';
 
      $nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : $node1->dncv_no;
-    $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchField();
-    $ut = ($nob[0]<9)?'Oui':'Non';
-    
+    $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs','oiseau_espece'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchAssoc();
+    if($nob['type_obs'] >= 9 || $nob['type_obs']==''){
+      $ut='Non'; //Non Utilisé
+      $sp='';
+    }else{
+     $ut=$nob['oiseau_espece'];
+    }
     if ($isscientist){
       $header = array(t('Numéro/Nom du Nichoir'),t('Participant'), t('Localisation'), 
       t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));      
@@ -1372,7 +1420,7 @@ function nids_block_view($block_name = '') {
     else {
       $header = array(t('Numéro/Nom du Nichoir'),t('Localisation'), 
       t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));    	
-      $rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', $parcecole, 
+      $rows[] = array($nomnumero, $parcecole, 
       $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation,$ut);
     }
   }
@@ -1384,12 +1432,69 @@ function nids_block_view($block_name = '') {
     //Return the content of the block
     $content=theme('table', array('header' => $header, 'rows' => $rows));
     $block = array(
-      'subject' => t('Liste des nichoirs'),
+      'subject' => t(''),
       'content' => $content,
       );
     return $block;
+  }  elseif ($block_name == 'nids_list_own_nichoirs') {
+    $query = db_select('nids_nichoirs', 'n');
+    $query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
+      'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
+      'habitat', 'hauteur', 'orientation', 'trou'))->condition('uid',$user->uid,'=');
+
+    $result = $query->execute();
+    $geog=array();
+    foreach ($result as $node1) {
+      $isnode = node_load($node1->nid);
+      $options = array('absolute' => TRUE);
+      $url = url('node/'.$node1->nid, $options);
+      $url2 = url('node/'.$node1->nid.'/view', $options);
+      $edit='<a href='.$url.'/edit>Modifier</a>';
+        
+     if ($node1->parc!='')
+        $parcecole=$node1->parc;
+    else if ($node1->ecole!='')
+        $parcecole=$node1->ecole;
+    else
+        $parcecole='Cours';
+
+     $nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : $node1->dncv_no;
+    $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchField();
+    $ut = ($nob[0]>9 || $nob[0]=='')?'Non':'Oui';
+      $header = array(t('Numéro/Nom du Nichoir'), t('Localisation'), 
+      t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));      
+      $rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
+      $node1->orientation, $ut, $edit);
+      $iw="<div><h2><b>".(($node1->dncv_no!='')?$node1->dncv_no:$node1->nom_nichoir)."</b></h2><div>".(($node1->parc!='')?$node1->parc:'').(($node1->ecole!='')?$node1->ecole:'')."</div>Date d&#39;installation: ".$node1->date_installation."</div>";
+      $geo=json_decode($node1->geography);
+      $geo->features[0]->properties=array(
+        'nid'=>$node1->nid,
+        'infowin'=>$iw,
+        'utilise'=>$ut,
+        );    
+      $geog[]=$geo->features[0];
+    //$output.="";
   }
-  //wasnt working cause I added one as an admin...
+
+    drupal_add_js('http://maps.google.com/maps/api/js?sensor=false');
+    drupal_add_js(base_path().drupal_get_path('module', 'nids') . '/javascript/nids.map.js');
+    drupal_add_js(array('nids_mode' => 'view'), 'setting');
+
+    //Return the content of the block
+  $arr=array(
+    'type'=>'FeatureCollection',
+    'features' => $geog,
+    );
+    $content="<input type='hidden' name='geography' value='".json_encode($arr,JSON_UNESCAPED_SLASHES)."'>";
+    $content.="<div id='map' style='width: 900px;height: 500px;max-width: none;'></div><br><br>";
+    $content.=theme('table', array('header' => $header, 'rows' => $rows));
+    $block = array(
+      'subject' => t(''),
+      'content' => $content,
+      );
+    return $block;
+  
+  } //wasnt working cause I added one as an admin...
   elseif ($block_name == 'nids_oiseaux_cour_list') {
     $query2=db_select('nids_oiseaux_cour','t');
     $query2->join('nids_users', 'u', 't.uid = u.uid');
@@ -1406,11 +1511,11 @@ function nids_block_view($block_name = '') {
       ($node2->rien_vu == 1)? $oiseau = 'Rien observé' : $oiseau = $node2->oiseau_espece;
     
     if ($isscientist){
-      $header = array(t('Participant'),t('Date d\'observation'), t('Durée d\'observation'), t('Espèce'),t('Nombre d\'individus'));      
+      $header = array(t('Participant'),t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
       $rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
     }
     else {
-      $header = array(t('Date d\'observation'), t('Durée d\'observation'), t('Espèce'),t('Nombre d\'individus'));      
+      $header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
       $rows[] = array($node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
     	}
     }
@@ -1447,7 +1552,7 @@ function nids_block_view($block_name = '') {
       $typeObsv = (_nichoir_type_observation($node3->type_obs) == 'Autre' ? $node3->type_obs_autre : _nichoir_type_observation($node3->type_obs));
       
       if($node3->rien_vu == 1) {
-      	$myObs = 'J\' ai rien vu';
+      	$myObs = 'Je n\'ai rien vu';
       	$typeObsv = 'Aucune';
       }
   		if ($isscientist){
@@ -1456,13 +1561,14 @@ function nids_block_view($block_name = '') {
         	$header = array(t('Participant'), t('Date d\'observation'), t('Oiseau èspece'), t('Type d\'observation'));
      	}
  		else {
- 			$rows[] = array($node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+ 			$rows[] = array($node3 ->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
  			$header = array(t('Date d\'observation'), t('Oiseau èspece'), t('Type d\'observation'));
      	}
     }
 
     //Return the content of the block
     $content=theme('table', array('header' => $header, 'rows' => $rows));
+
     $block = array(
       'subject' => t('List of nids observations datasets'),
       'content' => $content,
@@ -1517,7 +1623,7 @@ function nids_block_view($block_name = '') {
       $typeObsv = (_nichoir_type_observation($node3->type_obs) == 'Autre' ? $node3->type_obs_autre : _nichoir_type_observation($node3->type_obs));
       
       if($node3->rien_vu == 1) {
-      	$myObs = 'J\' ai rien vu';
+      	$myObs = 'Je n\'ai rien vu';
       	$typeObsv = 'Aucune';
       }
   		if ($isscientist){
@@ -1612,18 +1718,26 @@ function nichoir_load($nodes) {
 
 
 function quastuvu1_callback(){
-  return menu_tree('quastuvu1');
+  $output=drupal_render(menu_tree('quastuvu1')).plusdiv();
+  return $output;
 }
 
+
 function quastuvu2_callback(){
-  return menu_tree('quastuvu2');
+  $output=drupal_render(menu_tree('quastuvu2')).plusdiv();
+  return $output;
 }
 function quastuvu3_callback(){
-  return menu_tree('quastuvu5');
+  $output=drupal_render(menu_tree('quastuvu5')).plusdiv();
+  return $output;
+}
+
+function plusdiv(){
+  return '<div style="height:100px"></div>';
 }
 
 function ecole_callback(){
-  return menu_tree('quastuvu5');
+  return drupal_render(menu_tree('quastuvu5')).plusdiv();
 }
 
 function quastuvu4_callback(){
@@ -1655,6 +1769,12 @@ function inscription_callback(){
   $form = drupal_get_form('user_register_form');
   return drupal_render($form);
 }
+
+function connexion_callback(){
+  $form = drupal_get_form('user_login');
+  return drupal_render($form);
+}
+
 
 function ajax_ajout_oiseau_callback($form, $form_state) {
   return $form['oiseau'];

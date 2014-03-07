@@ -23,7 +23,8 @@
         zoom: 11,
         center: this.map_center,
         mapTypeId: google.maps.MapTypeId.HYBRID,
-        disableDoubleClickZoom: true
+        disableDoubleClickZoom: true,
+        streetViewControl: false,
       });
       this.marker_icon = {
         url: Drupal.settings.nids_path + '/images/marqueur_non_occupe.png',
