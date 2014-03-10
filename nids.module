@@ -1282,7 +1282,7 @@ function nids_map($width,$height){
     }
     $iw="<div><h2><b>".(($n->dncv_no!='')?'DNCV#'.$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc.'<br>':'').(($n->ecole!='')?$n->ecole.'<br>':'')."Date d&#39;installation: ".$n->date_installation."</div></div><br>";
     if($ut==1){
-      $iw.='<b>Utilisé!<br>'.$sp.'</b>';
+      $iw.='<b>Utilisé!<br>'.$sp.'<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:20px;height:20px"></b>';
     }
     $geo=json_decode($n->geography);
     $geo->features[0]->properties=array(
@@ -1406,7 +1406,7 @@ function nids_block_view($block_name = '') {
       $ut='Non'; //Non Utilisé
       $sp='';
     }else{
-     $ut=$nob['oiseau_espece'];
+     $ut='<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:30px;height:30px">'.$nob['oiseau_espece'];
     }
     if ($isscientist){
       $header = array(t('Numéro/Nom du Nichoir'),t('Participant'), t('Localisation'), 
