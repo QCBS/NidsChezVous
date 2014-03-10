@@ -225,7 +225,8 @@
 
     createInfoWindow: function(contentString) {
       return new google.maps.InfoWindow({
-        content: contentString
+        content: contentString,
+        maxWidth: 250
       });
     },
 

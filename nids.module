@@ -675,6 +675,7 @@ function nids_node_view($node, $view_mode, $langcode) {
     '#markup' => $ing.'
     					<ul>
     						<div id="map" style="width: 900px;height: 500px;max-width: none;"></div><br><br>
+    						<li>Nichoir DNCV?:' . ($node-­>dncv)?'Oui':'Non</li> 
     						<li>Numéro/Nom: ' . $node->dncv_no . ' ' .$node->nom_nichoir.'</li>
 							<li>L\'Emplacement: '.$myLocation.'</li>
 							<li>Date d\'Installation: '.$node->date_installation.'</li>
@@ -814,11 +815,6 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#title' => "Date et heure (sur 24h) de l'observation",
     '#required' => TRUE,
     '#datepicker_options' => array('maxDate' => date('Y-m-d H:i')),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="nichoir"]' => array('!value' => 0),
-        ),
-      ),
     );
 
 
@@ -1282,7 +1278,7 @@ function nids_map($width,$height){
       //$sp='';
       $sp=htmlentities($nob['oiseau_espece'],ENT_QUOTES);
     }
-    $iw="<div><h2><b>".(($n->dncv_no!='')?$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc.'<br>':'').(($n->ecole!='')?$n->ecole.'<br>':'')."Date d&#39;installation: ".$n->date_installation."</div></div><br>";
+    $iw="<div><h2><b>".(($n->dncv_no!='')?'DNCV#'.$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc.'<br>':'').(($n->ecole!='')?$n->ecole.'<br>':'')."Date d&#39;installation: ".$n->date_installation."</div></div><br>";
     if($ut==1){
       $iw.='<b>Utilisé!<br>'.$sp.'</b>';
     }
@@ -1300,7 +1296,7 @@ function nids_map($width,$height){
     'features' => $geog,
     );
   $output.="<input type='hidden' name='geography' value='".json_encode($arr,JSON_UNESCAPED_SLASHES)."'>";
-  $output.='<div id="map" style="width:'.$width.'px;height:'.$height.'px;max-width: none;"></div><br><br>';
+  $output.='<div id="map" style="width:100%;height:'.$height.'px;max-width: none;"></div><br><br>';
   return $output;
 }
 
@@ -1402,7 +1398,7 @@ function nids_block_view($block_name = '') {
 	  else
 	  		$parcecole='Cours';
 
-     $nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : $node1->dncv_no;
+     $nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : 'DNCV #'.$node1->dncv_no;
     $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs','oiseau_espece'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchAssoc();
     if($nob['type_obs'] >= 9 || $nob['type_obs']==''){
       $ut='Non'; //Non Utilisé
@@ -1458,14 +1454,14 @@ function nids_block_view($block_name = '') {
     else
         $parcecole='Cours';
 
-     $nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : $node1->dncv_no;
+     $nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : 'DNCV #'.$node1->dncv_no;
     $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchField();
     $ut = ($nob[0]>9 || $nob[0]=='')?'Non':'Oui';
       $header = array(t('Numéro/Nom du Nichoir'), t('Localisation'), 
       t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));      
       $rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
       $node1->orientation, $ut, $edit);
-      $iw="<div><h2><b>".(($node1->dncv_no!='')?$node1->dncv_no:$node1->nom_nichoir)."</b></h2><div>".(($node1->parc!='')?$node1->parc:'').(($node1->ecole!='')?$node1->ecole:'')."</div>Date d&#39;installation: ".$node1->date_installation."</div>";
+      $iw="<div><h2><b>".(($node1->dncv_no!='')?'DNCV #'.$node1->dncv_no:$node1->nom_nichoir)."</b></h2><div>".(($node1->parc!='')?$node1->parc:'').(($node1->ecole!='')?$node1->ecole:'')."</div>Date d&#39;installation: ".$node1->date_installation."</div>";
       $geo=json_decode($node1->geography);
       $geo->features[0]->properties=array(
         'nid'=>$node1->nid,
@@ -1486,7 +1482,7 @@ function nids_block_view($block_name = '') {
     'features' => $geog,
     );
     $content="<input type='hidden' name='geography' value='".json_encode($arr,JSON_UNESCAPED_SLASHES)."'>";
-    $content.="<div id='map' style='width: 900px;height: 500px;max-width: none;'></div><br><br>";
+    $content.="<div id='map' style='width: 100%;height: 500px;max-width: 95%;'></div><br><br>";
     $content.=theme('table', array('header' => $header, 'rows' => $rows));
     $block = array(
       'subject' => t(''),
