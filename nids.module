@@ -1214,6 +1214,8 @@ function nichoir_update($node) {
 }
 
 function nichoir_delete($node) {
+  db_delete('nids_nichoirs')->condition('nid', $node->nid)->execute();
+  db_delete('nids_nichoirs_obs')->condition('nid_id', $node->nid)->execute();
 }
 
 
@@ -1553,11 +1555,11 @@ function nids_block_view($block_name = '') {
       }
   		if ($isscientist){
       	$rows[] = array($node3->prenom. ' ' .$node3->nom_famille,
-        	$node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+        	$node3->date_obs, $myObs, $typeObsv);
         	$header = array(t('Participant'), t('Date d\'observation'), t('Oiseau èspece'), t('Type d\'observation'));
      	}
  		else {
- 			$rows[] = array($node3 ->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+ 			$rows[] = array($node3 ->date_obs, $myObs, $typeObsv);
  			$header = array(t('Date d\'observation'), t('Oiseau èspece'), t('Type d\'observation'));
      	}
     }
@@ -1624,11 +1626,11 @@ function nids_block_view($block_name = '') {
       }
   		if ($isscientist){
   			$rows[] = array($node3->prenom. ' ' .$node3->nom_famille,
-   	   $node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+   	   $node3->date_obs, $myObs, $typeObsv);
         	$header = array(t('Participant'), t('Date d\'Observation'), t('Oiseau Èspece'), t('Type d\'Observation'));
      	}
  		else {
- 			$rows[] = array($node3->date_obs, '<a href='.$url.'>'.$myObs.'</a>', $typeObsv);
+ 			$rows[] = array($node3->date_obs,$myObs, $typeObsv);
  			$header = array(t('Date d\'Observation'), t('Oiseau Èspece'), t('Type d\'Observation'));
      	}
 
