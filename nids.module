@@ -674,7 +674,7 @@ function nids_node_view($node, $view_mode, $langcode) {
 	$node->content['my_additional_field'] = array(
     '#markup' => $ing.'
     					<ul>
-    						<div id="map" style="width: 900px;height: 500px;max-width: none;"></div><br><br>
+    						<div id="map" style="width: 900px;height: 500px;max-width: none;max-height:85%;"></div><br><br>
     						<li>Nichoir DNCV?:' . ($node-­>dncv)?'Oui':'Non</li> 
     						<li>Numéro/Nom: ' . $node->dncv_no . ' ' .$node->nom_nichoir.'</li>
 							<li>L\'Emplacement: '.$myLocation.'</li>
@@ -1298,7 +1298,7 @@ function nids_map($width,$height){
     'features' => $geog,
     );
   $output.="<input type='hidden' name='geography' value='".json_encode($arr,JSON_UNESCAPED_SLASHES)."'>";
-  $output.='<div id="map" style="width:100%;height:'.$height.'px;max-width: none;"></div><br><br>';
+  $output.='<div id="map" style="width:100%;height:'.$height.'px;max-width: none;max-height:85%;"></div><br><br>';
   return $output;
 }
 
@@ -1373,7 +1373,7 @@ function nids_block_view($block_name = '') {
     $query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
       'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
       'habitat', 'hauteur', 'orientation', 'trou'))
-    ->fields('u',array('prenom', 'nom_famille'));
+    ->fields('u',array('prenom', 'nom_famille'))->orderBy('nid', 'DESC');
 
     $result = $query->execute();
     global $user;
@@ -1484,7 +1484,7 @@ function nids_block_view($block_name = '') {
     'features' => $geog,
     );
     $content="<input type='hidden' name='geography' value='".json_encode($arr,JSON_UNESCAPED_SLASHES)."'>";
-    $content.="<div id='map' style='width: 100%;height: 500px;max-width: 95%;'></div><br><br>";
+    $content.="<div id='map' style='width: 100%;height: 500px;max-width: 95%;max-height: 85%;'></div><br><br>";
     $content.=theme('table', array('header' => $header, 'rows' => $rows));
     $block = array(
       'subject' => t(''),
@@ -1498,7 +1498,7 @@ function nids_block_view($block_name = '') {
     $query2->join('nids_users', 'u', 't.uid = u.uid');
     $query2->fields('t',array('obs_id', 'uid', 'date_obs', 
       'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))
-    ->fields('u',array('prenom', 'nom_famille'));
+    ->fields('u',array('prenom', 'nom_famille'))->orderBy('obs_id', 'DESC');
     
     $result = $query2->execute();
 
@@ -1532,7 +1532,7 @@ function nids_block_view($block_name = '') {
     $query3->join('nids_users', 'u', 't.uid = u.uid');
     $query3->fields('t',array('obs_id', 'uid', 'nid_id', 'date_obs', 
       'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
-    ->fields('u',array('prenom', 'nom_famille'));
+    ->fields('u',array('prenom', 'nom_famille'))->orderBy('obs_id', 'DESC');
 
     $result = $query3->execute();
     
