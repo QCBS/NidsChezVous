@@ -1585,10 +1585,9 @@ function nids_block_view($block_name = '') {
     elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
     $query2=db_select('nids_oiseaux_cour','t');
     $query2->fields('t',array('obs_id', 'uid', 'date_obs', 
-      'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))->condition('uid',$user->uid,'=')->orderBy('obs_id', 'DESC');
+      'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))->condition('uid',$user->uid,'=')->isNotNull('ecole')->condition('ecole','','!=')->orderBy('obs_id', 'DESC');
     
     $result = $query2->execute();
-
     foreach ($result as $node2) {
       $isnode = node_load($node2->obs_id);
       $options = array('absolute' => TRUE);
@@ -1598,8 +1597,12 @@ function nids_block_view($block_name = '') {
       $rows[] = array($node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
     }
 
+    if ($result->rowCount()==0){
+      $content='<h1>Aucune observation</h1>';
+    }else{
     //Return the content of the block
-    $content=theme('table', array('header' => $header, 'rows' => $rows));
+      $content=theme('table', array('header' => $header, 'rows' => $rows));
+    }
     $block = array(
       'subject' => t(''),
       'content' => $content,
