@@ -148,6 +148,12 @@ $schema['nids_oiseaux_cour'] = array(
       'type' => 'int',
       'not null' => TRUE,
       ),
+    'ecole' => array(
+      'description' => 'Nom école si dans une école',
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => FALSE,
+      ),
     'date_obs' => array(
       'description' => 'Date de l\'observation',
       'type' => 'varchar',
