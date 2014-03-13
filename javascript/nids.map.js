@@ -12,8 +12,8 @@
       this.createMap();
       this.readGeoJSON();
       this.attachEvents();
-      if ($("input[name='geography']").val().length == 0){
-        this.addByName();
+     if ($("input[name='geography']").val().length == 0){
+          this.addByName();
       }
     },
 
