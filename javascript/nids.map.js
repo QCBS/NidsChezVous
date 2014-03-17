@@ -10,9 +10,11 @@
     attach: function() {
       this.geography=$("input[name='geography']");
       this.createMap();
-      this.readGeoJSON();
-      this.attachEvents();
-     if ($("input[name='geography']").val().length == 0){
+      if (this.geography.val().length > 0){
+          this.readGeoJSON();
+      }
+     this.attachEvents();
+     if (this.geography.val().length == 0){
           this.addByName();
       }
     },
@@ -44,6 +46,7 @@
       polygon = {};
 
       $.each(geojson.features, function() {
+        if(this.geometry){
         switch (this.geometry.type) {
           case 'Point':
             contentString=this.properties.infowin;
@@ -57,6 +60,7 @@
               self.addVertex(polygon, self.createPoint(this));
             });
           break;
+        }
         }
       });
     },
