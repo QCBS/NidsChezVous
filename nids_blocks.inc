@@ -113,12 +113,36 @@ function nids_block_view($block_name = '') {
 	$isscientist=($user_role==3 || $user_role==6);
 
 	if ($block_name == 'nids_list_nichoirs') {
+
+		if ($isscientist){
+			$header = array(
+				array('data' => t('Numéro/Nom du Nichoir'), 'field' => 'dncv_no'),
+				array('data' => t('Participant'), 'field' => 'nom_famille'),
+				array('data' => t('Localisation'), 'field' => 'ecole'),
+				array('data' => t('Date d\'installation'), 'field' => 'date_installation','sort'=>'desc'),
+				array('data' => t('Habitat'), 'field' => 'habitat'),
+				array('data' => t('Hauteur (mètres)'), 'field' => 'hauteur'),
+				array('data' => t('Orientation'), 'field' => 'orientation'),
+				array('data' => t('Occupé?')),
+				);
+		}else{
+			$header = array(
+				array('data' => t('Numéro/Nom du Nichoir'), 'field' => 'dncv_no'),
+				array('data' => t('Localisation'), 'field' => 'ecole'),
+				array('data' => t('Date d\'installation'), 'field' => 'date_installation','sort'=>'desc'),
+				array('data' => t('Habitat'), 'field' => 'habitat'),
+				array('data' => t('Hauteur (mètres)'), 'field' => 'hauteur'),
+				array('data' => t('Orientation'), 'field' => 'orientation'),
+				array('data' => t('Occupé?')),
+				);
+		}
+
 		$query = db_select('nids_nichoirs', 'n');
 		$query->join('nids_users', 'u', 'n.uid = u.uid');
 		$query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
 			'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
 			'habitat', 'hauteur', 'orientation', 'trou'))
-		->fields('u',array('prenom', 'nom_famille'))->orderBy('nid', 'DESC');
+		->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header);
 
 		$result = $query->execute();
 		global $user;
@@ -156,15 +180,12 @@ function nids_block_view($block_name = '') {
   	$ut='<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:30px;height:30px">'.$nob['oiseau_espece'];
   }
   if ($isscientist){
-  	$header = array(t('Numéro/Nom du Nichoir'),t('Participant'), t('Localisation'), 
-  		t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));      
+
   	$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', '<a href="'.$urlu.'">'.
   		$node1->prenom. ' ' .$node1->nom_famille.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
   		$node1->orientation, $ut, $edit);
   }
   else {
-  	$header = array(t('Numéro/Nom du Nichoir'),t('Localisation'), 
-  		t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));    	
   	$rows[] = array($nomnumero, $parcecole, 
   		$node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation,$ut);
   }
@@ -241,12 +262,28 @@ return $block;
 
 } 
 elseif ($block_name == 'nids_oiseaux_cour_liste') {
+	if ($isscientist){
+		$header = array(
+			array('data' => t('Participant')),
+			array('data' => t('Date d\'observation'), 'field' => 'date_obs', 'sort' => 'desc'),
+			array('data' => t('Durée d\'observation (min)'), 'field' => 'duree_obs'),
+			array('data' => t('Espèce'), 'field' => 'oiseau_espece'),
+			array('data' => t('Nombre d\'individus'), 'field' => 'nombre_individus'),
+			);
+	}else{
+		$header = array(
+			array('data' => t('Date d\'observation'), 'field' => 'date_obs', 'sort' => 'desc'),
+			array('data' => t('Durée d\'observation (min)'), 'field' => 'duree_obs'),
+			array('data' => t('Espèce'), 'field' => 'oiseau_espece'),
+			array('data' => t('Nombre d\'individus'), 'field' => 'nombre_individus'),
+			);
+	}
+
 	$query2=db_select('nids_oiseaux_cour','t');
 	$query2->join('nids_users', 'u', 't.uid = u.uid');
 	$query2->fields('t',array('obs_id', 'uid', 'date_obs', 
 		'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))
-	->fields('u',array('prenom', 'nom_famille'))->orderBy('obs_id', 'DESC');
-
+	->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header); 
 	$result = $query2->execute();
 
 	foreach ($result as $node2) {
@@ -256,11 +293,11 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 		($node2->rien_vu == 1)? $oiseau = 'Rien observé' : $oiseau = $node2->oiseau_espece;
 
 		if ($isscientist){
-			$header = array(t('Participant'),t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
+
 			$rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
 		}
 		else {
-			$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
+			//$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
 			$rows[] = array($node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
 		}
 	}
@@ -275,8 +312,9 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 }
 elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 	$query2=db_select('nids_oiseaux_cour','t');
+	$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus')); 
 	$query2->fields('t',array('obs_id', 'uid', 'date_obs', 
-		'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))->condition('uid',$user->uid,'=')->condition('ecole','','=')->orderBy('obs_id', 'DESC');
+		'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))->extend('TableSort')->orderByHeader($header)->condition('uid',$user->uid,'=')->condition('ecole','','=')->orderBy('obs_id', 'DESC');
 
 	$result = $query2->execute();
 	foreach ($result as $node2) {
@@ -284,7 +322,6 @@ elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 		$options = array('absolute' => TRUE);
 		$url = url($node2->oiseau_espece, $options);
 		($node2->rien_vu == 1)? $oiseau = 'Rien observé' : $oiseau = $node2->oiseau_espece;
-		$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
 		$rows[] = array($node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
 	}
 
@@ -297,11 +334,25 @@ elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 	return $block;
 }
 elseif ($block_name == 'nids_nichoirs_obs_list') {
+	if ($isscientist){
+	$header = array(
+		array('data'=>t('Participant'),'field' => 'nom_famille'), 
+		array('data'=>t('Date d\'observation'),'field' => 'date_obs', 'sort' => 'desc'),
+		array('data'=>t('Oiseau èspece'),'field' => 'oiseau_espece'), 
+		array('data'=>t('Type d\'observation'),'field' => 'type_obs'),
+		);
+}else{
+$header = array(
+		array('data'=>t('Date d\'observation'),'field' => 'date_obs', 'sort' => 'desc'),
+		array('data'=>t('Oiseau èspece'),'field' => 'oiseau_espece'), 
+		array('data'=>t('Type d\'observation'),'field' => 'type_obs'),
+		);}
+
 	$query3=db_select('nids_nichoirs_obs','t');
 	$query3->join('nids_users', 'u', 't.uid = u.uid');
 	$query3->fields('t',array('obs_id', 'uid', 'nid_id', 'date_obs', 
 		'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
-	->fields('u',array('prenom', 'nom_famille'))->orderBy('obs_id', 'DESC');
+	->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header);
 
 	$result = $query3->execute();
 
@@ -325,11 +376,9 @@ elseif ($block_name == 'nids_nichoirs_obs_list') {
 		if ($isscientist){
 			$rows[] = array($node3->prenom. ' ' .$node3->nom_famille,
 				$node3->date_obs, $myObs, $typeObsv);
-			$header = array(t('Participant'), t('Date d\'observation'), t('Oiseau èspece'), t('Type d\'observation'));
 		}
 		else {
 			$rows[] = array($node3 ->date_obs, $myObs, $typeObsv);
-			$header = array(t('Date d\'observation'), t('Oiseau èspece'), t('Type d\'observation'));
 		}
 	}
 
