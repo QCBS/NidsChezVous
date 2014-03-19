@@ -540,7 +540,6 @@ function connexion_callback(){
 
 
 function ajax_ajout_oiseau_callback($form, $form_state) {
-  ajax_command_invoke("[name^=espece_]", 'trigger', array('change'));
   return $form['oiseau'];
 }
 
