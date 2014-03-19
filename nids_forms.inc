@@ -953,11 +953,11 @@ function ajax_oiseaux_pics_callback(){
   $oiseaux=_observation_oiseaux_pic();
   $oi=$_POST['oiseau'];
   $key=recursive_array_search($oi,$oiseaux['Espèces communes']);
-  if($key){
-    $photo['link']=$oiseaux['Espèces communes'][$key]['pic'];
-  }else{
+  if($key===false){
     $key=recursive_array_search($oi,$oiseaux['Autres espèces']);
     $photo['link']=$oiseaux['Autres espèces'][$key]['pic'];
+  }else{
+    $photo['link']=$oiseaux['Espèces communes'][$key]['pic'];
   }
   drupal_json_output($photo);
 }
