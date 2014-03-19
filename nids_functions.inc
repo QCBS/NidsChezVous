@@ -215,6 +215,10 @@ $options = array(
       		  'url'=>'http://fr.wikipedia.org/wiki/Merle_d%27Am%C3%A9rique',
       		  'pic'=>'http://media.eol.org/content/2012/06/13/18/03023_orig.jpg'),
 
+		array('espece'=>'Mésange à tête brune', 
+	  		  'url'=>'http://fr.wikipedia.org/wiki/M%C3%A9sange_%C3%A0_t%C3%AAte_brune', 
+			  'pic'=>'http://media.eol.org/content/2012/06/15/08/06048_orig.jpg'),
+
         array('espece'=>'Mésange à tête noire',
       		  'url'=>'http://fr.wikipedia.org/wiki/M%C3%A9sange_%C3%A0_t%C3%AAte_noire',
       		  'pic'=>'http://media.eol.org/content/2009/07/24/13/07355_orig.jpg'),
@@ -345,7 +349,7 @@ $options = array(
       		  'url'=>'http://fr.wikipedia.org/wiki/Cr%C3%A9cerelle_d%27Am%C3%A9rique',
       		  'pic'=>'http://media.eol.org/content/2012/01/06/01/31894_orig.jpg'),
       		  
-			array('espece'=>'Durbec des sapins', 
+		 array('espece'=>'Durbec des sapins', 
 		  			'url'=>'http://fr.wikipedia.org/wiki/Durbec_des_sapins', 
 		  			'pic'=>'http://media.eol.org/content/2012/06/13/21/98614_orig.jpg'),      		  
       		  
@@ -504,10 +508,6 @@ $options = array(
 			array('espece'=>'Merlebleu de l\'Est', 
 		  			'url'=>'http://fr.wikipedia.org/wiki/Merlebleu_de_l%27Est', 
 		  			'pic'=>'http://media.eol.org/content/2012/06/12/11/62423_orig.jpg'),
-
-			array('espece'=>'Mésange à tête brune', 
-		  			'url'=>'http://fr.wikipedia.org/wiki/M%C3%A9sange_%C3%A0_t%C3%AAte_brune', 
-		  			'pic'=>'http://media.eol.org/content/2012/06/15/08/06048_orig.jpg'),
 
 			array('espece'=>'Mésangeai du Canada', 
 		  			'url'=>'http://fr.wikipedia.org/wiki/M%C3%A9sangeai_du_Canada', 
@@ -705,7 +705,6 @@ $options = array(
         ),
     );
   return $options;
-
 }
 
 function nids_map($width,$height){

@@ -168,6 +168,12 @@ function nids_menu() {
     'type' => MENU_CALLBACK,
     );
 
+  $items['nids/oiseaux_pics'] = array(
+    'page callback' => 'ajax_oiseaux_pics_callback',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    );
+
   $items['explorer'] = array(
     'title'           => t('Explorer'),
     'description'     => t('Explorer'),
@@ -534,6 +540,7 @@ function connexion_callback(){
 
 
 function ajax_ajout_oiseau_callback($form, $form_state) {
+  ajax_command_invoke("[name^=espece_]", 'trigger', array('change'));
   return $form['oiseau'];
 }
 

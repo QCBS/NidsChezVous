@@ -618,7 +618,6 @@ return $form;
 }
 
 function nids_obscour_form($form, &$form_state) {
-
   $path=drupal_get_path_alias(current_path());
   $form['parc_ecole_check'] = array(
     '#type' => 'hidden',
@@ -696,23 +695,31 @@ function nids_obscour_form($form, &$form_state) {
           ),
         ),
       '#options' => _observation_oiseaux(),
-'#required' => FALSE,
-'#multiple' => TRUE,
-'#size' => 10,
-'#prefix' => '<tr><td><div class="sameline">',
-'#suffix' => '</div>',
+      '#required' => FALSE,
+      '#multiple' => TRUE,
+      '#size' => 10,
+      '#prefix' => '<tr><td><div class="sameline">',
+      '#suffix' => '</div>',
 );
 $form['oiseau']['nombre_individus_'.$i] = array(
   '#type' => 'textfield',
   '#size' => 10,
   '#title' => '<h4>'.t("Indiquer le nombre d'individus observés (approximatif pour les grands nombres)").'</h4>',
-  '#suffix' => '</td></tr>',
+  '#suffix' => '</div></td>',
   '#states' => array(
     'visible' => array(
       ':input[name="rien_vu"]' => array('checked' => FALSE),
       ),
     ),
   );
+$form['oiseau']['photo_'.$i] = array(
+  '#type' => 'hidden',
+  '#size' => 10,
+  '#prefix'=>'<td><div id="photodiv'.$i.'">',
+  '#suffix' => '</div></td></tr>',
+  );
+
+
 }
 
 
@@ -745,6 +752,7 @@ $module_path = base_path().drupal_get_path('module', 'nids');
 
 $js_files = array(
   $module_path . '/javascript/nids.jqueryui.js',
+  $module_path . '/javascript/nids.pics.js',
   $module_path . '/javascript/selectboxit.js',
   );
 $form['#attached']['js'] = $js_files;
@@ -885,6 +893,29 @@ function nids_form_validate($form, &$form_state){
 
 }
 
+function ajax_oiseaux_pics_callback(){
+  $photo=array();
+  $oiseaux=_observation_oiseaux_pic();
+  $oi=$_POST['oiseau'];
+  $key=recursive_array_search($oi,$oiseaux['Espèces communes']);
+  if($key){
+    $photo['link']=$oiseaux['Espèces communes'][$key]['pic'];
+  }else{
+    $key=recursive_array_search($oi,$oiseaux['Autres espèces']);
+    $photo['link']=$oiseaux['Autres espèces'][$key]['pic'];
+  }
+  drupal_json_output($photo);
+}
 
+
+function recursive_array_search($needle,$haystack) {
+    foreach($haystack as $key=>$value) {
+        $current_key=$key;
+        if($needle===$value OR (is_array($value) && recursive_array_search($needle,$value) !== false)) {
+            return $current_key;
+        }
+    }
+    return false;
+}
 
 ?>
