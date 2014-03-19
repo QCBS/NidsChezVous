@@ -417,34 +417,34 @@ function nichoir_load($nodes) {
     $isview=1;
   }
 
-	if($nodes[key($nodes)]->type=='nichoir' && $isedit) {		
-		global $user;
-		$result = db_select('nids_nichoirs', 'n')->fields('n')
-		->condition('n.nid', $nodes[key($nodes)]->nid, '=')
-		->execute()
-		->fetchAll();
-		foreach ($result as $record){
-			$nodes[key($nodes)]->uid = $record->uid;
-			$nodes[key($nodes)]->dncv = $record->dncv;
-			$nodes[key($nodes)]->dncv_no = $record->dncv_no;
+	if($nodes[key($nodes)]->type=='nichoir' && $isedit) {
+			global $user;
+			$result = db_select('nids_nichoirs', 'n')->fields('n')
+			->condition('n.nid', $nodes[key($nodes)]->nid, '=')
+			->execute()
+			->fetchAll();
+			foreach ($result as $record){
+				$nodes[key($nodes)]->uid = $record->uid;
+				$nodes[key($nodes)]->dncv = $record->dncv;
+				$nodes[key($nodes)]->dncv_no = $record->dncv_no;
 			
-			if ($record->parc!='')
-     			$nodes[key($nodes)]->dans_un_parc_ecole = 'Parc';
-	  		else if ($record->ecole!='')
-	  			$nodes[key($nodes)]->dans_un_parc_ecole = 'École';
-	  		if($record->ecole!='' && $record->parc!='')
-	  			$nodes[key($nodes)]->dans_un_parc_ecole = 'Non';
+				if ($record->parc!='')
+     				$nodes[key($nodes)]->dans_un_parc_ecole = 'Parc';
+	  			else if ($record->ecole!='')
+	  				$nodes[key($nodes)]->dans_un_parc_ecole = 'École';
+	  			if($record->ecole!='' && $record->parc!='')
+	  				$nodes[key($nodes)]->dans_un_parc_ecole = 'Non';
 	  			
-			$nodes[key($nodes)]->ecole = $record->ecole;
-			$nodes[key($nodes)]->parc = $record->parc;
-			$nodes[key($nodes)]->nom_nichoir = $record->nom_nichoir;
-			$nodes[key($nodes)]->geography = $record->geography;
-			$nodes[key($nodes)]->date_installation = $record->date_installation;
-			$nodes[key($nodes)]->habitat = $record->habitat;
-			$nodes[key($nodes)]->hauteur = $record->hauteur;
-			$nodes[key($nodes)]->trou = $record->trou;
-			$nodes[key($nodes)]->orientation = $record->orientation;
-			}
+				$nodes[key($nodes)]->ecole = $record->ecole;
+				$nodes[key($nodes)]->parc = $record->parc;
+				$nodes[key($nodes)]->nom_nichoir = $record->nom_nichoir;
+				$nodes[key($nodes)]->geography = $record->geography;
+				$nodes[key($nodes)]->date_installation = $record->date_installation;
+				$nodes[key($nodes)]->habitat = $record->habitat;
+				$nodes[key($nodes)]->hauteur = $record->hauteur;
+				$nodes[key($nodes)]->trou = $record->trou;
+				$nodes[key($nodes)]->orientation = $record->orientation;
+				}
 		}
 	
 		if($nodes[key($nodes)]->type=='nichoir' && $isview) {		

@@ -357,7 +357,6 @@ $header = array(
 
 
 	foreach ($result as $node3) {
-
 		$isnode = node_load($node3->obs_id);
 		$options = array('absolute' => TRUE);
 		$url = url($node3->oiseau_espece, $options);
@@ -373,8 +372,10 @@ $header = array(
 			$typeObsv = 'Aucune';
 		}
 		if ($isscientist){
-			$rows[] = array($node3->prenom. ' ' .$node3->nom_famille,
-				$node3->date_obs, $myObs, $typeObsv);
+			$options3 = array('query' => array('obs_id' => $node3->obs_id));
+			$url3 = url('nichoir', $options3);
+			$edit='<a href='.$url3.'>Edit</a>';
+			$rows[] = array($node3->prenom. ' ' .$node3->nom_famille, $node3->date_obs, $myObs, $typeObsv, $edit);
 		}
 		else {
 			$rows[] = array($node3 ->date_obs, $myObs, $typeObsv);
@@ -409,7 +410,6 @@ elseif ($block_name == 'nids_type_obs') {
 		);
 	return $block;
 }
-  	 // This is for the "View" when in nids_node_view(), it has an extra condition
 elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 	$myNode = menu_get_object();
 	$myNode2 = $myNode->nid;
@@ -421,26 +421,14 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 	->condition('nid_id',$myNode2,'=');
 	$result = $query5->execute();
 
-
 	foreach ($result as $node3) {
-
 		$isnode = node_load($node3->obs_id);
 		$options = array('absolute' => TRUE);
-		$url = url($node3->oiseau_espece, $options);
-		
-		$url2 = url('node/'.$node3->obs_id, $options);
-		if(node_access('update',$node3->obs_id)){
-			$edit='<a href='.$url2.'/edit/obs_id>Edit</a>';
-			$urlu = url('user/'.$node3->obs_id.'/edit', $options);
-		}
-		else
-			$edit='';
-		
-		if(empty($node3->oiseau_espece))
-			$myObs = $node3->oiseau_espece_autre;
-		if(empty($node3->oiseau_espece_autre))
-			$myObs = $node3->oiseau_espece;
 
+		if(isset($node3->oiseau_espece))
+			$myObs = $node3->oiseau_espece_autre;
+		if(isset($node3->oiseau_espece_autre))
+			$myObs = $node3->oiseau_espece;
 		$typeObsv = (_nichoir_type_observation($node3->type_obs) == 'Autre' ? $node3->type_obs_autre : _nichoir_type_observation($node3->type_obs));
 
 		if($node3->rien_vu == 1) {
@@ -448,6 +436,9 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 			$typeObsv = 'Aucune';
 		}
 		if ($isscientist){
+			$options2 = array('query' => array('obs_id' => $node3->obs_id));
+			$url2 = url('nichoir', $options2);
+			$edit='<a href='.$url2.'>Edit</a>';
 			$rows[] = array($node3->prenom. ' ' .$node3->nom_famille, $node3->date_obs, $myObs, $typeObsv, $edit);
 			$header = array(t('Participant'), t('Date d\'Observation'), t('Oiseau Èspece'), t('Type d\'Observation'));
 		}
