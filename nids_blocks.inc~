@@ -430,7 +430,7 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 		
 		$url2 = url('node/'.$node3->obs_id, $options);
 		if(node_access('update',$node3->obs_id)){
-			$edit='<a href='.$url2.'/edit/obs_id>Edit</a>';
+			$edit='<a href='.$url2.'/edit>Edit</a>';
 			$urlu = url('user/'.$node3->obs_id.'/edit', $options);
 		}
 		else

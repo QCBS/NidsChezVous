@@ -405,8 +405,7 @@ function nids_user_load($users) {
 
 
 function nichoir_load($nodes) {
-	//$cp=$_GET['q'];
-  $cp=current_path();
+  	$cp=current_path();
 	$isedit = strpos($cp,'edit');
 	if(!$isedit){
     $isview=1;
