@@ -426,7 +426,17 @@ function nids_obsnichoir_form($form, &$form_state) {
     );
 
 			}
-			
+			if(isset($obsEdit)){
+        $userid=$myObs['uid'];
+      }else{
+        $userid=$user->uid;
+      }
+
+  $form['user'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $userid,
+    );
+
   $form['parc_ecole_check'] = array(
     '#type' => 'hidden',
     '#default_value' => $path,
@@ -505,7 +515,7 @@ function nids_obsnichoir_form($form, &$form_state) {
   }else{
     $nichoirs=db_select('nids_nichoirs','n')
     ->fields('n')
-    ->condition('uid',$user->uid,'=')
+    ->condition('uid',$userid,'=')
     ->execute();
   }
   if ($nichoirs->rowCount()>0){
@@ -874,7 +884,6 @@ function nids_obsnichoir_form_validate($form, &$form_state){
 }
 
 function nids_obsnichoir_form_submit($form, &$form_state){
-  global $user;
   if(array_key_exists('obs_id', $form_state['values'])) {
     $obsid=$form_state['values']['obs_id'];
   }
@@ -885,7 +894,7 @@ function nids_obsnichoir_form_submit($form, &$form_state){
   $exists = $result->rowCount();
   
   $fieldsarray=array(
-          'uid' => $user->uid,
+          'uid' => $form_state['values']['user'],
           'nid_id' => $form_state['values']['nichoir'],
           'date_obs' => $form_state['values']['date'],
           'rien_vu' => $form_state['values']['rien_vu'],
