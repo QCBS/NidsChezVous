@@ -528,14 +528,12 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#tree' => FALSE,
     );
 
-$nomnum=isset($myObs['nom_nichoir']) && !isset($myObs['dncv_no']) ? $myObs['nom_nichoir'] : "";
-
   $form['nichoir_fs']['nichoir'] = array(
     '#title' => t("Pour quel nichoir?"),
     '#type' => 'select',
     '#options' => $nidsopts,
     '#required' => TRUE,
-    '#default_value' => isset($obsEdit) ? $nomnum : "",
+    '#default_value' => isset($obsEdit) ? $myObs['nid_id'] : "",
     );
 
   $form['date'] = array(
@@ -877,43 +875,37 @@ function nids_obsnichoir_form_validate($form, &$form_state){
 
 function nids_obsnichoir_form_submit($form, &$form_state){
   global $user;
+  if(array_key_exists('obs_id', $form_state['values'])) {
+    $obsid=$form_state['values']['obs_id'];
+  }
   $result = db_select('nids_nichoirs_obs', 'n')
   ->fields('n')
-  ->condition('n.nid_id',$form_state['values']['nid'],'=')
+  ->condition('n.obs_id',$obsid,'=')
   ->execute();
   $exists = $result->rowCount();
   
+  $fieldsarray=array(
+          'uid' => $user->uid,
+          'nid_id' => $form_state['values']['nichoir'],
+          'date_obs' => $form_state['values']['date'],
+          'rien_vu' => $form_state['values']['rien_vu'],
+          'type_obs' => $form_state['values']['type_obs'],
+          'type_obs_autre' => $form_state['values']['type_obs_autre'],
+          'oiseau_espece' => $form_state['values']['espece'],
+          'oiseau_espece_autre' => $form_state['values']['espece_autre'],
+        );
+
   if(!$exists){
-  		db_insert('nids_nichoirs_obs')->fields(array(
-    		'uid' => $user->uid,
-    		'nid_id' => $form_state['values']['nichoir'],
-    		'date_obs' => $form_state['values']['date'],
-    		'rien_vu' => $form_state['values']['rien_vu'],
-    		'type_obs' => $form_state['values']['type_obs'],
-    		'type_obs_autre' => $form_state['values']['type_obs_autre'],
-    		'oiseau_espece' => $form_state['values']['espece'],
-    		'oiseau_espece_autre' => $form_state['values']['espece_autre'],
-   		)
-  		)->execute();
+  		db_insert('nids_nichoirs_obs')->fields($fieldsarray)->execute();
   		drupal_set_message('Observation ajoutée!','status');
- 	 	drupal_goto('observation');
+ 	 	  drupal_goto('observation');
   		}
   	else {
-  		db_update('nids_nichoirs_obs')->fields(array(
-    	'uid' => $user->uid,
-    	'nid_id' => $form_state['values']['nichoir'],
-    	'date_obs' => $form_state['values']['date'],
-    	'rien_vu' => $form_state['values']['rien_vu'],
-    	'type_obs' => $form_state['values']['type_obs'],
-    	'type_obs_autre' => $form_state['values']['type_obs_autre'],
-    	'oiseau_espece' => $form_state['values']['espece'],
-    	'oiseau_espece_autre' => $form_state['values']['espece_autre'],
-   	)
-  		)->execute();
+  		db_update('nids_nichoirs_obs')->fields($fieldsarray)->condition('obs_id',$obsid,'=')->execute();
   		drupal_set_message('Observation mise à jour!','status');
- 	 	drupal_goto('observation');
-  	}
-}
+ 	 	  drupal_goto('observation');
+    	}
+  }
 
 function nichoir_update($node) {
   if($node->type=='nichoir'){

@@ -110,7 +110,7 @@ function nids_block_view($block_name = '') {
 	->condition('uid', $user->uid,'=')
 	->execute()
 	->fetchField();
-	$isscientist=($user_role==3 || $user_role==6);
+	$isscientist=($user_role==3 || $user_role==4);
 
 	if ($block_name == 'nids_list_nichoirs') {
 

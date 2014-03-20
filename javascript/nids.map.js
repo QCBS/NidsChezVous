@@ -63,6 +63,10 @@
         }
         }
       });
+      if(geojson.features.length==1){
+        markercenter=new google.maps.LatLng(geojson.features[0].geometry.coordinates[1],geojson.features[0].geometry.coordinates[0]);
+        self.map.setCenter(markercenter);
+      }
     },
 
     attachEvents: function() {
