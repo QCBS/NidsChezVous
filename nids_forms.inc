@@ -809,6 +809,10 @@ function nichoir_form_validate($form, &$form_state) {
  if ($form_state['values']['numero']=='' & $form_state['values']['nom_nichoir']=='') {
   form_set_error('numero', t('Veuillez spécifier un nom ou un numéro au nichoir!'));
 }
+ if ($form_state['values']['geography']=='') {
+  form_set_error('geography', t('Si aucun marqueur n\'apparait sur la carte, veuillez essayer d\'utiliser le site web avec un fureteur différent (par ex. version récente de Chrome ou Firefox'));
+}
+
 
 }
 

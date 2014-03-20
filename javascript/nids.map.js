@@ -360,7 +360,7 @@
       locname = $("#adresse").text();
       //locname=$("input[name='location_name']").val();
       suffix='Quebec';
-      if (locname===""){
+      if (locname==="" || locname.replace(/, /g,"")===""){
         locname='Rimouski,';
       }
       if(locname.indexOf(suffix, locname.length - suffix.length) == -1) {
