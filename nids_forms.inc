@@ -762,7 +762,7 @@ $form['oiseau']['photo_'.$i] = array(
 
 }
 
-
+ 
 $form['ajout_espece'] = array(
   '#type' => 'submit',
   '#value' => t("Autre espèce observée"),
