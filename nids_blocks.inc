@@ -60,7 +60,7 @@ function nids_block_info() {
 	return $blocks;
 }
 
-
+ 
 
 function nids_block_obs_oiseaux(){
 	$block = module_invoke('nids', 'block_view', 'nids_oiseaux_cour_liste');
@@ -180,7 +180,6 @@ function nids_block_view($block_name = '') {
   	$ut='<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:30px;height:30px">'.$nob['oiseau_espece'];
   }
   if ($isscientist){
-
   	$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', '<a href="'.$urlu.'">'.
   		$node1->prenom. ' ' .$node1->nom_famille.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
   		$node1->orientation, $ut, $edit);

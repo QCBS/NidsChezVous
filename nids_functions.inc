@@ -1,5 +1,5 @@
 <?php
-
+ 
 function _nichoir_type_observation($key = NULL) {
   $options = array(
     1 => t('Entrée ou sortie du nichoir'),
