@@ -160,9 +160,9 @@ function nids_block_view($block_name = '') {
 			if(node_access('update',$node1->nid)){
 				$edit='<a href='.$url.'/edit>Edit</a>';
 				$urlu = url('user/'.$node1->uid.'/edit', $options);
-			}else{
-				$edit='';
 			}
+			else
+				$edit='';
 
 			if ($node1->parc!='')
 				$parcecole=$node1->parc;
@@ -174,21 +174,22 @@ function nids_block_view($block_name = '') {
 			$nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : 'DNCV #'.$node1->dncv_no;
 			$nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs','oiseau_espece'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchAssoc();
 			if($nob['type_obs'] >= 9 || $nob['type_obs']==''){
-      $ut='Non'; //Non Utilisé
-      $sp='';
-  }else{
-  	$ut='<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:30px;height:30px">'.$nob['oiseau_espece'];
-  }
-  if ($isscientist){
-  	$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', '<a href="'.$urlu.'">'.
-  		$node1->prenom. ' ' .$node1->nom_famille.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
-  		$node1->orientation, $ut, $edit);
-  }
-  else {
-  	$rows[] = array($nomnumero, $parcecole, 
-  		$node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation,$ut);
-  }
-}
+				$ut='Non'; //Non Utilisé
+				$sp='';
+  			}
+  			else{
+  				$ut='<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:30px;height:30px">'.$nob['oiseau_espece'];
+  			}
+  			if ($isscientist){
+  				$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', '<a href="'.$urlu.'">'.
+  				$node1->prenom. ' ' .$node1->nom_famille.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
+  				$node1->orientation, $ut, $edit);
+  				}
+ 		 	else {
+  				$rows[] = array($nomnumero, $parcecole, 
+  				$node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation,$ut);
+  			}
+		}
 if(empty($header))
 	$header = array(t('Numéro/Nom du Nichoir'),t('Participant'), t('Localisation'), 
 		t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), 
@@ -277,25 +278,34 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 			array('data' => t('Nombre d\'individus'), 'field' => 'nombre_individus'),
 			);
 	}
-
 	$query2=db_select('nids_oiseaux_cour','t');
 	$query2->join('nids_users', 'u', 't.uid = u.uid');
-	$query2->fields('t',array('obs_id', 'uid', 'date_obs', 'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))
-	->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header); 
+	$query2->fields('t',array('obs_id', 'uid', 'ecole', 'date_obs',
+		'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))
+	->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header);
 	$result = $query2->execute();
 
 	foreach ($result as $node2) {
 		$isnode = node_load($node2->obs_id);
-		$options = array('absolute' => TRUE);
-		$url = url($node2->oiseau_espece, $options);
-		($node2->rien_vu == 1)? $oiseau = 'Rien observé' : $oiseau = $node2->oiseau_espece;
+		$oiseau = ($node2->rien_vu == 1)? 'Rien observé' : $node2->oiseau_espece;
 
 		if ($isscientist){
-
-			$rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
+			$options = array('absolute' => TRUE, 'query' => array('obs_id' => $node2->obs_id));
+			//cour_obs or ecole_obs ?
+			if(empty($node2->ecole)){
+				$url = url('cour_obs', $options);
+				$ecole = 'Cours';
+			}
+			else{
+				$url = url('ecole_obs', $options);
+				$ecole = $node2->ecole;
+			}
+			$edit='<a href='.$url.'>Edit</a>';
+			$header = array(t('Participant'), t('Emplacement'), t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
+			$rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $ecole, $node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus, $edit);
 		}
 		else {
-			//$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
+			$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
 			$rows[] = array($node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
 		}
 	}

@@ -907,7 +907,7 @@ function cour_form_submit($form, &$form_state) {
   		'ecole' => $form_state['values']['ecole'],
   		'duree_obs' => ($form_state['values']['duree_obs']=='')?null:$form_state['values']['duree_obs'],
   		'oiseau_espece' => key($form_state['values']['espece_'.$i]),
-  		'nombre_individus' => ($form_state['values']['nombre_individus_'.$i]=='')?null:$form_state['values']['nombre_individus_'.$i],);
+  		'nombre_individus' => ($form_state['values']['nombre_individus_'.$i]=='')?null:$form_state['values']['nombre_individus_'.$i],)
   	
   	if(!$exists){
     db_insert('nids_oiseaux_cour')->fields($myArray)->execute();
