@@ -259,7 +259,8 @@ $form['options']['status']['#value'] = TRUE;
 $form['options']['status']['#checked'] = TRUE;
 drupal_set_title(t("Ajouter un nichoir"));
 return $form;
-}else if($form_id == 'user_register_form' | $form_id == 'user_profile_form'){
+}
+else if($form_id == 'user_register_form' | $form_id == 'user_profile_form'){
   //debug($form_state['user']);
   $form['type_utilisateur'] = array(
     '#title' => t("S'insrire en tant que..."),
@@ -657,7 +658,7 @@ return $form;
 }
 
 function nids_obscour_form($form, &$form_state) {
-
+	global $user;
   $path=drupal_get_path_alias(current_path());
   $obsEdit = $_GET['obs_id'];
   $myObsCour = array();
@@ -873,7 +874,8 @@ function nichoir_insert($node) {
 function nichoir_form_submit($form, &$form_state) {
 if ($form_state['values']['numero']==''){
   $form_state['values']['title']=$form_state['values']['nom_nichoir'];
-}else{
+}
+else{
   $form_state['values']['title']=$form_state['values']['numero'];
 }
 }
@@ -894,20 +896,15 @@ function cour_form_submit($form, &$form_state) {
   }
   for($i=0;$i<$numoiseaux;$i++)
   {
-  	$result = db_select('nids_oiseaux_cour', 'n')
-  	->fields('n')
-  	->condition('n.obs_id',$form_state['values']['obs_id'],'=')
-  	->execute();
-  	$exists = $result->rowCount();
-  	
+  	$exists = (array_key_exists('obs_id',$form_state['values'])) ? true : false;
   	$myArray = array(
   		'uid' => $form_state['values']['user'],
+  		'ecole' => $form_state['values']['ecole'],
   		'date_obs' => $form_state['values']['date'],
   		'rien_vu' => $form_state['values']['rien_vu'],
-  		'ecole' => $form_state['values']['ecole'],
   		'duree_obs' => ($form_state['values']['duree_obs']=='')?null:$form_state['values']['duree_obs'],
   		'oiseau_espece' => key($form_state['values']['espece_'.$i]),
-  		'nombre_individus' => ($form_state['values']['nombre_individus_'.$i]=='')?null:$form_state['values']['nombre_individus_'.$i],)
+  		'nombre_individus' => ($form_state['values']['nombre_individus_'.$i]=='')?null:$form_state['values']['nombre_individus_'.$i],);
   	
   	if(!$exists){
     db_insert('nids_oiseaux_cour')->fields($myArray)->execute();
@@ -960,7 +957,7 @@ function nids_obsnichoir_form_submit($form, &$form_state){
   	else {
   		db_update('nids_nichoirs_obs')->fields($fieldsarray)->condition('obs_id',$obsid,'=')->execute();
   		drupal_set_message('Observation mise à jour!','status');
- 	 	  drupal_goto('observation');
+ 	 	drupal_goto('observation');
     	}
   }
 
@@ -991,7 +988,6 @@ function nichoir_delete($node) {
   db_delete('nids_nichoirs')->condition('nid', $node->nid)->execute();
   db_delete('nids_nichoirs_obs')->condition('nid_id', $node->nid)->execute();
 }
-
 
 function nids_form_validate($form, &$form_state){
 

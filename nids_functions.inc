@@ -1,5 +1,19 @@
 <?php
- 
+
+function observation_delete()
+{
+	$obs_id = $_GET['obs_id'];
+ 	db_delete('nids_oiseaux_cour')->condition('obs_id',$obs_id,'=')->execute();
+  	drupal_set_message('Observation '. $_GET['obs_id'] .' supprimée ','status');
+ 	drupal_goto('explorer/observation_oiseaux');
+}
+
+function observation_ignored()
+{
+  	drupal_set_message('Observation demeuré!','status');
+ 	drupal_goto('explorer/observation_oiseaux');
+}
+
 function _nichoir_type_observation($key = NULL) {
   $options = array(
     1 => t('Entrée ou sortie du nichoir'),

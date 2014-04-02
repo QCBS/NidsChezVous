@@ -159,6 +159,7 @@ function nids_block_view($block_name = '') {
 			$url2 = url('node/'.$node1->nid.'/view', $options);
 			if(node_access('update',$node1->nid)){
 				$edit='<a href='.$url.'/edit>Edit</a>';
+				$delete='<a href='.$url.'/delete>Delete</a>';
 				$urlu = url('user/'.$node1->uid.'/edit', $options);
 			}
 			else
@@ -183,7 +184,7 @@ function nids_block_view($block_name = '') {
   			if ($isscientist){
   				$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', '<a href="'.$urlu.'">'.
   				$node1->prenom. ' ' .$node1->nom_famille.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
-  				$node1->orientation, $ut, $edit);
+  				$node1->orientation, $ut, $edit, $delete);
   				}
  		 	else {
   				$rows[] = array($nomnumero, $parcecole, 
@@ -202,7 +203,9 @@ $block = array(
 	'content' => $content,
 	);
 return $block;
-}  elseif ($block_name == 'nids_list_own_nichoirs') {
+}  
+
+elseif ($block_name == 'nids_list_own_nichoirs') {
 	$query = db_select('nids_nichoirs', 'n');
 	$query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
 		'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
@@ -216,7 +219,9 @@ return $block;
 		$url = url('node/'.$node1->nid, $options);
 		$url2 = url('node/'.$node1->nid.'/view', $options);
 		$edit='<a href='.$url.'/edit>Modifier</a>';
-
+		//$urlDel = url('supprimer_observation', $options);
+		//$delete='<a href='.$urlDel.'>Supprimer</a>';
+		
 		if ($node1->parc!='')
 			$parcecole=$node1->parc;
 		else if ($node1->ecole!='')
@@ -229,8 +234,7 @@ return $block;
 		$ut = ($nob[0]>9 || $nob[0]=='')?'Non':'Oui';
 		$header = array(t('Numéro/Nom du Nichoir'), t('Localisation'), 
 			t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));      
-		$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
-			$node1->orientation, $ut, $edit);
+		$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation, $ut, $edit, $delete);
 		$iw="<div><h2><b>".(($node1->dncv_no!='')?'DNCV #'.$node1->dncv_no:$node1->nom_nichoir)."</b></h2><div>".(($node1->parc!='')?$node1->parc:'').(($node1->ecole!='')?$node1->ecole:'')."</div>Date d&#39;installation: ".$node1->date_installation."</div>";
 		$geo=json_decode($node1->geography);
 		$geo->features[0]->properties=array(
@@ -261,6 +265,7 @@ return $block;
 	return $block;
 
 } 
+
 elseif ($block_name == 'nids_oiseaux_cour_liste') {
 	if ($isscientist){
 		$header = array(
@@ -300,9 +305,11 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 				$url = url('ecole_obs', $options);
 				$ecole = $node2->ecole;
 			}
+			$urlDel = url('supprimer_observation', $options);
 			$edit='<a href='.$url.'>Edit</a>';
+			$delete='<a href='.$urlDel.'>Supprimer</a>';
 			$header = array(t('Participant'), t('Emplacement'), t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
-			$rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $ecole, $node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus, $edit);
+			$rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $ecole, $node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus, $edit, $delete);
 		}
 		else {
 			$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
@@ -318,6 +325,7 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 		);
 	return $block;
 }
+
 elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 	$query2=db_select('nids_oiseaux_cour','t');
 	$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus')); 
@@ -329,6 +337,7 @@ elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 		$isnode = node_load($node2->obs_id);
 		$options = array('absolute' => TRUE);
 		$url = url($node2->oiseau_espece, $options);
+		
 		($node2->rien_vu == 1)? $oiseau = 'Rien observé' : $oiseau = $node2->oiseau_espece;
 		$rows[] = array($node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus);
 	}
@@ -341,20 +350,22 @@ elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 		);
 	return $block;
 }
+
 elseif ($block_name == 'nids_nichoirs_obs_list') {
 	if ($isscientist){
-	$header = array(
-		array('data'=>t('Participant'),'field' => 'nom_famille'), 
-		array('data'=>t('Date d\'observation'),'field' => 'date_obs', 'sort' => 'desc'),
-		array('data'=>t('Oiseau èspece'),'field' => 'oiseau_espece'), 
-		array('data'=>t('Type d\'observation'),'field' => 'type_obs'),
-		);
-}else{
-$header = array(
-		array('data'=>t('Date d\'observation'),'field' => 'date_obs', 'sort' => 'desc'),
-		array('data'=>t('Oiseau èspece'),'field' => 'oiseau_espece'), 
-		array('data'=>t('Type d\'observation'),'field' => 'type_obs'),
-		);}
+		$header = array(
+			array('data'=>t('Participant'),'field' => 'nom_famille'), 
+			array('data'=>t('Date d\'observation'),'field' => 'date_obs', 'sort' => 'desc'),
+			array('data'=>t('Oiseau èspece'),'field' => 'oiseau_espece'), 
+			array('data'=>t('Type d\'observation'),'field' => 'type_obs'),
+			);
+	}
+	else{
+		$header = array(
+			array('data'=>t('Date d\'observation'),'field' => 'date_obs', 'sort' => 'desc'),
+			array('data'=>t('Oiseau èspece'),'field' => 'oiseau_espece'), 
+			array('data'=>t('Type d\'observation'),'field' => 'type_obs'),
+			);}
 
 	$query3=db_select('nids_nichoirs_obs','t');
 	$query3->join('nids_users', 'u', 't.uid = u.uid');
@@ -384,7 +395,9 @@ $header = array(
 			$options3 = array('query' => array('obs_id' => $node3->obs_id));
 			$url3 = url('nichoir', $options3);
 			$edit='<a href='.$url3.'>Edit</a>';
-			$rows[] = array($node3->prenom. ' ' .$node3->nom_famille, $node3->date_obs, $myObs, $typeObsv, $edit);
+			$urlDel = url('supprimer_observation', $options3);// Check options for type of observations
+			$delete='<a href='.$urlDel.'>Supprimer</a>';
+			$rows[] = array($node3->prenom. ' ' .$node3->nom_famille, $node3->date_obs, $myObs, $typeObsv, $edit, $delete);
 		}
 		else {
 			$rows[] = array($node3 ->date_obs, $myObs, $typeObsv);
@@ -400,6 +413,7 @@ $header = array(
 		);
 	return $block;
 }
+
 elseif ($block_name == 'nids_type_obs') {
 	$query4=db_select('nids_nichoir_type_obs','t');
 	$query4->fields('t',array('type_obs_id', 'type_obs_key', 'description'));
@@ -419,6 +433,7 @@ elseif ($block_name == 'nids_type_obs') {
 		);
 	return $block;
 }
+
 elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 	$myNode = menu_get_object();
 	$myNode2 = $myNode->nid;
