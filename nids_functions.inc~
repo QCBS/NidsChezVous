@@ -1,17 +1,28 @@
 <?php
 
-function observation_delete()
+function my_delete()
 {
-	$obs_id = $_GET['obs_id'];
- 	db_delete('nids_oiseaux_cour')->condition('obs_id',$obs_id,'=')->execute();
-  	drupal_set_message('Observation '. $_GET['obs_id'] .' supprimée ','status');
- 	drupal_goto('explorer/observation_oiseaux');
+	$type=$_GET['type'];
+	$id = $_GET['id'];
+	
+	// For birds
+	if($type == "observation"){
+ 		db_delete('nids_oiseaux_cour')->condition('obs_id',$id,'=')->execute();
+  		drupal_set_message('Observation '.$id.' supprimée ','status');
+ 		drupal_goto('explorer');
+ 	}
+ 	// For nests
+ 	elseif($type == "observation_nids"){
+ 		db_delete('nids_nichoirs_obs')->condition('obs_id',$id,'=')->execute();
+  		drupal_set_message('Observation '.$id.' supprimée ','status');
+ 		drupal_goto('explorer');
+ 	}
 }
 
-function observation_ignored()
+function my_ignored()
 {
   	drupal_set_message('Observation demeuré!','status');
- 	drupal_goto('explorer/observation_oiseaux');
+ 	drupal_goto('explorer');
 }
 
 function _nichoir_type_observation($key = NULL) {

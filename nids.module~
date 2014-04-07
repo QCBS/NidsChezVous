@@ -174,28 +174,28 @@ function nids_menu() {
     'type' => MENU_CALLBACK,
     );
     
-  $items['supprimer_observation'] = array(
+  $items['supprimer'] = array(
     'page callback' => 'myDelete',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     );
     
-  $items['supprimer_observation/Oui'] = array(
+  $items['supprimer/Oui'] = array(
     'title'           => t("Oui"),
     'description'     => t('Oui'),
     'weight'          => 1,
-    'page callback' => 'observation_delete',
+    'page callback' => 'my_delete',
     'menu_name' => 'delete_Menu',
     'access arguments' => array('access content'),
     'options' => array('obs_id'),
     'type' => MENU_NORMAL_ITEM,
     );
     
-  $items['supprimer_observation/Non'] = array(
+  $items['supprimer/Non'] = array(
     'title'           => t("Non"),
     'description'     => t('Non'),
     'weight'          => 2,
-    'page callback' => 'observation_ignored',
+    'page callback' => 'my_ignored',
     'menu_name' => 'delete_Menu',
     'access arguments' => array('access content'),
     'type' => MENU_NORMAL_ITEM,
@@ -440,6 +440,7 @@ function nids_user_load($users) {
 function nichoir_load($nodes) {
   	$cp=current_path();
 	$isedit = strpos($cp,'edit');
+	$isview = 0;
 	if(!$isedit){
     $isview=1;
   }
@@ -507,26 +508,26 @@ function nichoir_load($nodes) {
 }
 
 function myDelete(){
-	$obs_id=$_GET['obs_id'];
-	debug($obs_id);
-	$output=myText($obs_id);
+	$id=$_GET['id'];
+	$type=$_GET['type'];
+	$output=myText($id, $type);
 	return $output;
 }
-function myText($obs_id){
-	$options = array('absolute' => TRUE, 'query' => array('obs_id' => $obs_id));
+function myText($id, $type){
+	$options = array('absolute' => TRUE, 'query' => array('id' => $id, 'type' => $type));
   return 
    '<div>
   	<h1>Est-tu certain?</h1> 
 	<li class="first leaf ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="width: 300px; list-style-type: none; padding: 5px; margin: 5px;">
 		<span class="ui-button-text">
-        <a href='.url('supprimer_observation/Oui', $options).'></a>
+        <a href='.url('supprimer/Oui', $options).'></a>
             Oui
         </a>
     	</span>
 	</li>
 	<li class="last leaf ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="width: 300px; list-style-type: none; padding: 5px; margin: 5px;">
    	<span class="ui-button-text">
-        <a href='.url('supprimer_observation/Non', $options).'></a>
+        <a href='.url('supprimer/Non', $options).'></a>
             Non
         </a>
    	</span>

@@ -155,8 +155,6 @@ if (isset($form['#node']->uid)){
       '#default_value' => ""
       );
 
-drupal_set_message($form['#node']->nichoir['site_details']['geography']);
-
     $form['geo']['geography'] = array(
       '#title' => t('Lieu du nichoir'),
       '#type' => 'hidden',
@@ -396,41 +394,39 @@ else if($form_id == 'user_register_form' | $form_id == 'user_profile_form'){
 
 // Form builder. Form ID = function name
 function nids_obsnichoir_form($form, &$form_state) {
-  $path=drupal_get_path_alias(current_path());
-  $obsEdit = $_GET['obs_id'];
-  $myObs = array();
-		if(isset($obsEdit)){
-			$query = db_select('nids_nichoirs_obs', 'n');
-			$query->join('nids_nichoirs', 't', 'n.nid_id = t.nid');
-			$query->fields('n', array('obs_id', 'uid', 'nid_id', 'date_obs', 
-									  'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
-			->fields('t', array('dncv_no', 'nom_nichoir'))
-			->condition('n.obs_id', $obsEdit, '=');
-			$result = $query->execute();
-			
-			foreach ($result as $record){
-				$myObs['dncv_no'] = $record->dncv_no;
-				$myObs['nom_nichoir'] = $record->nom_nichoir;
-				$myObs['obs_id'] = $record->obs_id;
-				$myObs['uid'] = $record->uid;
-				$myObs['nid_id'] = $record->nid_id;
-				$myObs['date_obs'] = $record->date_obs;
-				$myObs['rien_vu'] = $record->rien_vu;
-				$myObs['oiseau_espece'] = $record->oiseau_espece;
-				$myObs['oiseau_espece_autre'] = $record->oiseau_espece_autre;
-				$myObs['type_obs'] = $record->type_obs;
-				$myObs['type_obs_autre'] = $record->type_obs_autre;
-				}
-			  $form['obs_id'] = array(
-    		  '#type' => 'hidden',
-    		  '#default_value' => $obsEdit,
-    );
-
+	global $user;
+  	$path=drupal_get_path_alias(current_path());
+  	$obsEdit = $_GET['id'];
+  	$myObs = array();
+  	
+  	if(isset($obsEdit)){
+		$query = db_select('nids_nichoirs_obs', 'n');
+		$query->join('nids_nichoirs', 't', 'n.nid_id = t.nid');
+		$query->fields('n', array('obs_id', 'uid', 'nid_id', 'date_obs', 
+		'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
+		->fields('t', array('dncv_no', 'nom_nichoir'))
+		->condition('n.obs_id', $obsEdit, '=');
+		$result = $query->execute();
+		
+		foreach ($result as $record){
+			$myObs['dncv_no'] = $record->dncv_no;
+			$myObs['nom_nichoir'] = $record->nom_nichoir;
+			$myObs['obs_id'] = $record->obs_id;
+			$myObs['uid'] = $record->uid;
+			$myObs['nid_id'] = $record->nid_id;
+			$myObs['date_obs'] = $record->date_obs;
+			$myObs['rien_vu'] = $record->rien_vu;
+			$myObs['oiseau_espece'] = $record->oiseau_espece;
+			$myObs['oiseau_espece_autre'] = $record->oiseau_espece_autre;
+			$myObs['type_obs'] = $record->type_obs;
+			$myObs['type_obs_autre'] = $record->type_obs_autre;
 			}
-			if(isset($obsEdit))
-				$userid=$myObs['uid'];
-      	else
-        		$userid=$user->uid;
+		  $form['obs_id'] = array('#type' => 'hidden', '#default_value' => $obsEdit,);
+		  
+		$userid=$myObs['uid'];
+	}
+	else
+   	$userid=$user->uid;
 
   $form['user'] = array(
     '#type' => 'hidden',
@@ -519,13 +515,14 @@ function nids_obsnichoir_form($form, &$form_state) {
     ->execute();
   }
   if ($nichoirs->rowCount()>0){
+  	drupal_set_message('Here', 'status');
     for ($i=1;$i<=$nichoirs->rowCount();$i++) {
       $nic=$nichoirs->fetchAssoc();
-      if ($nic['dncv_no']===null){
+      if ($nic['dncv_no']===null)
         $nidsopts=$nidsopts + array($nic['nid']=>$nic['nom_nichoir']);
-      }else{
+      else
         $nidsopts=$nidsopts + array($nic['nid']=>$nic['dncv_no']);
-      }
+      
     }
   }
 
@@ -660,7 +657,7 @@ return $form;
 function nids_obscour_form($form, &$form_state) {
 	global $user;
   $path=drupal_get_path_alias(current_path());
-  $obsEdit = $_GET['obs_id'];
+  $obsEdit = $_GET['id'];
   $myObsCour = array();
 		if(isset($obsEdit)){
 			$query = db_select('nids_oiseaux_cour', 'n');
