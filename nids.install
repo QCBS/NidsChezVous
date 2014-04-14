@@ -133,7 +133,6 @@ $schema['nids_nichoirs'] = array(
     ),
 );
 
-  // Moes' work begins here
 $schema['nids_oiseaux_cour'] = array(
   'description' => 'oiseau observé dans ta cour',
   'fields' => array(
@@ -184,8 +183,6 @@ $schema['nids_oiseaux_cour'] = array(
     ),
 'primary key' => array('obs_id'),
 );
-
-  // Moes' work ends here
 
 $schema['nids_nichoirs_obs'] = array(
   'description' => 'observations dans les nichoirs',

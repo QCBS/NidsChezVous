@@ -245,7 +245,6 @@ function nids_menu() {
     'page callback' => 'nids_list',
     );
 
-
   $items['explorer/nids_obsv'] = array(
     'title'           => t('Observations dans les nichoirs'),
     'description'     => t('Observations dans les nichoirs'),
@@ -340,7 +339,7 @@ function nids_node_view($node, $view_mode, $langcode) {
 	if(empty($node->ecole) && empty($node->parc))
 		$myLocation = 'Cours';
 	$myHauteur = (empty($node->hauteur)) ? 'inconnu' : $node->hauteur.' m';
-	$myHole = (empty($node->trou)) ? 'Diametre inconnu' : $node->trou.' cm';
+	$myHole = (empty($node->trou)) ? 'Diamètre inconnu' : $node->trou.' cm';
 	$ing="<input type='hidden' name='geography' value='".$node->geography."'>";
    $dncv=($node->dncv==1)?'Oui':'Non';
 	$node->content['my_additional_field'] = array(
@@ -580,10 +579,9 @@ function ajout_nichoir_callback(){
   return drupal_render($form);
 }
 
-function ajax_parc_nichoir_callback(){
-  return $form['nichoir_fs'];
+function ajax_parc_nichoir_callback($form, $form_state){
+  return $form['nichoir'];
 }
-
 
 function inscription_callback(){
   $form = drupal_get_form('user_register_form');

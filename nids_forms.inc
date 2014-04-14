@@ -396,9 +396,9 @@ else if($form_id == 'user_register_form' | $form_id == 'user_profile_form'){
 function nids_obsnichoir_form($form, &$form_state) {
 	global $user;
   	$path=drupal_get_path_alias(current_path());
-  	$obsEdit = $_GET['id'];
   	$myObs = array();
-  	
+	if(isset($_GET['id']))
+  		$obsEdit = $_GET['id'];
   	if(isset($obsEdit)){
 		$query = db_select('nids_nichoirs_obs', 'n');
 		$query->join('nids_nichoirs', 't', 'n.nid_id = t.nid');
@@ -443,10 +443,10 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => array(
       null => 'Choisir...',
-      'Beauséjour' => 'Beauséjour',
-      'La gare' => 'La gare',
-      'Mont-Saint-Louis' => 'Mont-Saint Louis',
-      'Mairie Saint-Anaclet' => 'Mairie Saint-Anaclet',
+      'Parc Beauséjour' => 'Beauséjour',
+      'Parc La gare' => 'La gare',
+      'Parc Mont-Saint-Louis' => 'Mont-Saint Louis',
+      'Parc Mairie Saint-Anaclet' => 'Mairie Saint-Anaclet',
       'Bibliothèque Lisette-Morin' =>'Bibliothèque Lisette-Morin',
       ),
     '#required' => FALSE,
@@ -494,28 +494,33 @@ function nids_obsnichoir_form($form, &$form_state) {
 
   global $user;
   $nidsopts=array(0 => 'Choisir....');
-  if(!array_key_exists('values',$form_state)){
-    $form_state['values']['parc']='nothing';
-    $form_state['values']['ecole']='nothing';
+  if(array_key_exists('values',$form_state)) {
+  	if($form_state['values']['parc_ecole_check']=='parc'){
+      $nichoirs=db_select('nids_nichoirs','n')
+      ->fields('n')
+      ->condition('parc',$form_state['values']['parc'],'=')
+      ->execute();
+    } 
+    else if($form_state['values']['parc_ecole_check']=='nichoir_ecole'){
+      $nichoirs=db_select('nids_nichoirs','n')
+      ->fields('n')
+      ->condition('ecole',$form_state['values']['ecole'],'=')
+      ->execute();
+    } 
+    else{
+      $nichoirs=db_select('nids_nichoirs','n')
+      ->fields('n')
+      ->condition('obs_id',$myObs['obs_id'],'=')
+      ->execute();
+    }
   }
-  if($path==='parc'){
-    $nichoirs=db_select('nids_nichoirs','n')
-    ->fields('n')
-    ->condition('parc',$form_state['values']['parc'],'=')
-    ->execute();
-  }else if ($path==='nichoir_ecole'){
-    $nichoirs=db_select('nids_nichoirs','n')
-    ->fields('n')
-    ->condition('ecole',$form_state['values']['ecole'],'=')
-    ->execute();
-  }else{
+  else {
     $nichoirs=db_select('nids_nichoirs','n')
     ->fields('n')
     ->condition('uid',$userid,'=')
     ->execute();
   }
   if ($nichoirs->rowCount()>0){
-  	drupal_set_message('Here', 'status');
     for ($i=1;$i<=$nichoirs->rowCount();$i++) {
       $nic=$nichoirs->fetchAssoc();
       if ($nic['dncv_no']===null)
@@ -526,20 +531,13 @@ function nids_obsnichoir_form($form, &$form_state) {
     }
   }
 
-
-  $form['nichoir_fs'] =array(
-    '#title_display' => 'invisible',
-    '#type' => 'fieldset',
-    '#prefix' => '<div id="nichoir_fs">',
-    '#suffix' => '</div>',
-    '#tree' => FALSE,
-    );
-
-  $form['nichoir_fs']['nichoir'] = array(
+  $form['nichoir'] = array(
     '#title' => t("Pour quel nichoir?"),
     '#type' => 'select',
     '#options' => $nidsopts,
     '#required' => TRUE,
+    '#prefix' => '<div id="nichoir_fs">',
+    '#suffix' => '</div>',
     '#default_value' => isset($obsEdit) ? $myObs['nid_id'] : "",
     );
 
@@ -770,20 +768,20 @@ function nids_obscour_form($form, &$form_state) {
           ':input[name="rien_vu"]' => array('checked' => FALSE),
           ),
         ),
-      '#options' => _observation_oiseaux(),
-'#required' => FALSE,
-'#multiple' => TRUE,
-'#size' => 10,
-'#prefix' => '<tr><td><div class="sameline">',
-'#suffix' => '</div>',
-'#default_value' => isset($obsEdit) ? $myObsCour['oiseau_espece'] : "",
-);
+      '#options' => _observation_oiseaux_pic(true),
+	  '#required' => FALSE,
+	  '#multiple' => TRUE,
+	  '#size' => 10,
+	  '#prefix' => '<tr><td><div class="sameline">',
+	  '#suffix' => '</div>',
+	  '#default_value' => isset($obsEdit) ? $myObsCour['oiseau_espece'] : "",
+	  );
 
 $form['oiseau']['nombre_individus_'.$i] = array(
   '#type' => 'textfield',
   '#size' => 10,
   '#title' => '<h4>'.t("Indiquer le nombre d'individus observés (approximatif pour les grands nombres)").'</h4>',
-  '#suffix' => '</td></tr>',
+  '#suffix' => '</div></td>',
   '#states' => array(
     'visible' => array(
       ':input[name="rien_vu"]' => array('checked' => FALSE),
@@ -791,6 +789,14 @@ $form['oiseau']['nombre_individus_'.$i] = array(
     ),
   '#default_value' => isset($obsEdit) ? $myObsCour['nombre_individus'] : "",
   );
+$form['oiseau']['photo_'.$i] = array(
+  '#type' => 'hidden',
+  '#size' => 10,
+  '#prefix'=>'<td><div id="photodiv'.$i.'">',
+  '#suffix' => '</div></td></tr>',
+  );
+
+
 }
 
 $form['ajout_espece'] = array(
@@ -821,6 +827,7 @@ $module_path = base_path().drupal_get_path('module', 'nids');
 
 $js_files = array(
   $module_path . '/javascript/nids.jqueryui.js',
+  $module_path . '/javascript/nids.pics.js',
   $module_path . '/javascript/selectboxit.js',
   );
 $form['#attached']['js'] = $js_files;
@@ -831,17 +838,14 @@ return $form;
 
 // Form validation handler.
 function nichoir_form_validate($form, &$form_state) {
- if (is_numeric($form_state['values']['hauteur'])==false & $form_state['values']['hauteur']!='') {
-  form_set_error('hauteur', t('Veuillez entrer un chiffre pour la hauteur!'));
-}
- if ($form_state['values']['numero']=='' & $form_state['values']['nom_nichoir']=='') {
-  form_set_error('numero', t('Veuillez spécifier un nom ou un numéro au nichoir!'));
-}
- if ($form_state['values']['geography']=='') {
-  form_set_error('geography', t('Si aucun marqueur n\'apparait sur la carte, veuillez essayer d\'utiliser le site web avec un fureteur différent (par ex. version récente de Chrome ou Firefox'));
-}
-
-
+	if (is_numeric($form_state['values']['hauteur'])==false & $form_state['values']['hauteur']!='')
+		form_set_error('hauteur', t('Veuillez entrer un chiffre pour la hauteur!'));
+		
+	if ($form_state['values']['numero']=='' & $form_state['values']['nom_nichoir']=='') 
+		form_set_error('numero', t('Veuillez spécifier un nom ou un numéro au nichoir!'));
+		
+	if ($form_state['values']['geography']=='') 
+		form_set_error('geography', t('Si aucun marqueur n\'apparait sur la carte, veuillez essayer d\'utiliser le site web avec un fureteur différent (par ex. version récente de Chrome ou Firefox'));
 }
 
 // Form submit handler.
@@ -885,6 +889,7 @@ function cour_form_validate($form, &$form_state) {
 
 // Form submit handler.
 function cour_form_submit($form, &$form_state) {
+  global $user;
   $numoiseaux=0;
   foreach ($form_state['values'] as $key => $value) {
     if (strpos($key,"espece_") !== false) {
@@ -926,15 +931,16 @@ function nids_obsnichoir_form_validate($form, &$form_state){
 }
 
 function nids_obsnichoir_form_submit($form, &$form_state){
-  if(array_key_exists('obs_id', $form_state['values'])) {
-    $obsid=$form_state['values']['obs_id'];
-  }
+  $exists = 0;
+  if(array_key_exists('obs_id', $form_state['values'])){
+  		$obsid=$form_state['values']['obs_id'];
+  
   $result = db_select('nids_nichoirs_obs', 'n')
   ->fields('n')
   ->condition('n.obs_id',$obsid,'=')
   ->execute();
   $exists = $result->rowCount();
-  
+  }
   $fieldsarray=array(
           'uid' => $form_state['values']['user'],
           'nid_id' => $form_state['values']['nichoir'],
@@ -945,11 +951,11 @@ function nids_obsnichoir_form_submit($form, &$form_state){
           'oiseau_espece' => $form_state['values']['espece'],
           'oiseau_espece_autre' => $form_state['values']['espece_autre'],
         );
-
+        
   if(!$exists){
   		db_insert('nids_nichoirs_obs')->fields($fieldsarray)->execute();
   		drupal_set_message('Observation ajoutée!','status');
- 	 	  drupal_goto('observation');
+ 	 	drupal_goto('observation');
   		}
   	else {
   		db_update('nids_nichoirs_obs')->fields($fieldsarray)->condition('obs_id',$obsid,'=')->execute();
@@ -992,14 +998,16 @@ function nids_form_validate($form, &$form_state){
 
 function ajax_oiseaux_pics_callback(){
   $photo=array();
-  $oiseaux=_observation_oiseaux_pic();
+  $oiseaux=_observation_oiseaux_pic(false);
   $oi=$_POST['oiseau'];
   $key=recursive_array_search($oi,$oiseaux['Espèces communes']);
   if($key===false){
     $key=recursive_array_search($oi,$oiseaux['Autres espèces']);
     $photo['link']=$oiseaux['Autres espèces'][$key]['pic'];
+    $photo['info']=$oiseaux['Autres espèces'][$key]['url'];
   }else{
     $photo['link']=$oiseaux['Espèces communes'][$key]['pic'];
+    $photo['info']=$oiseaux['Espèces communes'][$key]['url'];
   }
   drupal_json_output($photo);
 }

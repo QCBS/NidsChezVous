@@ -88,7 +88,7 @@ function nids_blocklist(){
 
 function nids_own_blocklist(){
 	$block = module_invoke('nids', 'block_view', 'nids_list_own_nichoirs');
-	return $block;
+	return $block['content'];
 }
 
 function nids_list(){
@@ -157,14 +157,15 @@ function nids_block_view($block_name = '') {
 			$options = array('absolute' => TRUE);
 			$url = url('node/'.$node1->nid, $options);
 			$url2 = url('node/'.$node1->nid.'/view', $options);
-			if(node_access('update',$node1->nid)){
-				$edit='<a href='.$url.'/edit>Edit</a>';
-				$delete='<a href='.$url.'/delete>Delete</a>';
-				$urlu = url('user/'.$node1->uid.'/edit', $options);
+			$urlu = url('user/'.$node1->uid.'/edit', $options);
+			if(node_access('update',$node1)){
+				$edit='<a href='.$url.'/edit>Modifier</a>';
+				$delete='<a href='.$url.'/delete>Supprimer</a>';
 			}
-			else
+			else{
 				$edit='';
-
+				$delete='';
+			}
 			if ($node1->parc!='')
 				$parcecole=$node1->parc;
 			else if ($node1->ecole!='')
@@ -173,23 +174,27 @@ function nids_block_view($block_name = '') {
 				$parcecole='Cours';
 
 			$nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : 'DNCV #'.$node1->dncv_no;
-			$nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs','oiseau_espece'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchAssoc();
+			
+			$nob = db_select('nids_nichoirs_obs', 'n')
+			->fields('n',array('type_obs','oiseau_espece'))
+			->condition('nid_id', $node1->nid,'=')
+			->orderBy('obs_id', 'DESC')
+			->execute()
+			->fetchAssoc();
+			
 			if($nob['type_obs'] >= 9 || $nob['type_obs']==''){
 				$ut='Non'; //Non Utilisé
 				$sp='';
   			}
-  			else{
+  			else
   				$ut='<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:30px;height:30px">'.$nob['oiseau_espece'];
+  			
+  			if($isscientist){
+  				$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', '<a href="'.$urlu.'">'. $node1->prenom. ' ' .$node1->nom_famille.'</a>',
+  				$parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation, $ut, $edit, $delete);
   			}
-  			if ($isscientist){
-  				$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', '<a href="'.$urlu.'">'.
-  				$node1->prenom. ' ' .$node1->nom_famille.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, 
-  				$node1->orientation, $ut, $edit, $delete);
-  				}
- 		 	else {
-  				$rows[] = array($nomnumero, $parcecole, 
-  				$node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation,$ut);
-  			}
+ 		 	else
+  				$rows[] = array($nomnumero, $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation,$ut);
 		}
 if(empty($header))
 	$header = array(t('Numéro/Nom du Nichoir'),t('Participant'), t('Localisation'), 
@@ -220,9 +225,7 @@ elseif ($block_name == 'nids_list_own_nichoirs') {
 		$url = url('node/'.$node1->nid, $options2);
 		$url2 = url('node/'.$node1->nid.'/view', $options);
 		$edit='<a href='.$url.'/edit>Modifier</a>';
-		
 		$delete='<a href='.$url.'/delete>Supprimer</a>';
-		
 		
 		if ($node1->parc!='')
 			$parcecole=$node1->parc;
@@ -232,10 +235,17 @@ elseif ($block_name == 'nids_list_own_nichoirs') {
 			$parcecole='Cours';
 
 		$nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : 'DNCV #'.$node1->dncv_no;
-		$nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs'))->condition('nid_id', $node1->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchField();
+		$nob = db_select('nids_nichoirs_obs', 'n')
+		->fields('n',array('type_obs'))
+		->condition('nid_id', $node1->nid,'=')
+		->orderBy('obs_id', 'DESC')
+		->execute()
+		->fetchField();
+		
 		$ut = ($nob[0]>9 || $nob[0]=='')?'Non':'Oui';
 		$header = array(t('Numéro/Nom du Nichoir'), t('Localisation'), 
-			t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?'));      
+			t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), t('Orientation'),t('Occupé?')); 
+			     
 		$rows[] = array('<a href='.$url2.'>'.$nomnumero.'</a>', $parcecole, $node1->date_installation, $node1->habitat, $node1->hauteur, $node1->orientation, $ut, $edit, $delete);
 		$iw="<div><h2><b>".(($node1->dncv_no!='')?'DNCV #'.$node1->dncv_no:$node1->nom_nichoir)."</b></h2><div>".(($node1->parc!='')?$node1->parc:'').(($node1->ecole!='')?$node1->ecole:'')."</div>Date d&#39;installation: ".$node1->date_installation."</div>";
 		$geo=json_decode($node1->geography);
@@ -453,8 +463,9 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 			$myObs = 'Je n\'ai rien vu';
 			$typeObsv = 'Aucune';
 		}
+	
 		if ($isscientist){
-			$options2 = array('query' => array('obs_id' => $node3->obs_id, 'type' => "observation_nids"));
+			$options2 = array('query' => array('id' => $node3->obs_id, 'type' => "observation_nids"));
 			$url = url('nichoir', $options2);
 			$edit='<a href='.$url.'>Edit</a>';
 			$url2 = url('supprimer', $options2);

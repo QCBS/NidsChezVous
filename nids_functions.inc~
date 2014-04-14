@@ -17,6 +17,10 @@ function my_delete()
   		drupal_set_message('Observation '.$id.' supprimée ','status');
  		drupal_goto('explorer');
  	}
+ 	elseif($type == "nichoir") {
+  		drupal_set_message('Replace by drupal supprimée ','status');
+ 		drupal_goto('explorer');
+ 	}
 }
 
 function my_ignored()
