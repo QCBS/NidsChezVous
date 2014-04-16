@@ -46,8 +46,40 @@ function _nichoir_type_observation($key = NULL) {
 }
 
 function _observation_oiseaux_pic($select) {
+	//Gets the names of birds that have already been oberved by YOU!
+	$query1=db_select('nids_oiseaux_cour','t');
+	$query1->join('nids_users', 'u', 't.uid = u.uid');
+	$query1->fields('t',array('oiseau_espece'))
+		   ->distinct()
+		   ->fields('u',array('prenom', 'nom_famille'));
+	$result = $query1->execute();
+	$count = $result->rowCount();
+	if($count > 0){
+		$myBirds = array();
+		// No that i have the birds i need to somehow get the url and pic, this is too inconvenient
+		/*
+		foreach ($result as $node1) {
+			// Go to nids_oiseaux_pic to get the url and pic column
+			$query2=db_select('nids_oiseaux_pic','t'); 
+			$query2->fields('t',array('oiseaux_id', 'oiseaux_name', 'description', 'oiseaux_link',))
+			->condition('oiseaux_name',$node1->oiseau_espece,'=');
+			$result2 = $query2->execute();
+			//debug($result2);
+			foreach ($result2 as $node2)
+				debug($node2);
+		}
+		*/
+	}
+  
   $options = array(
         null=>"Choisir...",
+		"Oiseaux déjà Observé" => array( //"--- Oiseaux déjà Observé ---",
+		array('espece'=>'Still in testing stage',
+            'url'=>'',
+            'pic'=>''),
+			
+			),
+			
         "Espèces communes"=>array( //"--- Espèces communes ---",
           array('espece'=>'Bruant à couronne blanche',
             'url'=>'http://fr.wikipedia.org/wiki/Bruant_%C3%A0_couronne_blanche',
@@ -523,7 +555,6 @@ function _observation_oiseaux_pic($select) {
          'url'=>'http://fr.wikipedia.org/wiki/Pluvier_semipalm%C3%A9', 
          'pic'=>'http://media.eol.org/content/2009/07/24/12/52542_orig.jpg'),
 
-		  //Spelling error confirm with Guillaume
         array('espece'=>'Pygargue à tête blanche', 
          'url'=>'http://fr.wikipedia.org/wiki/Pygargue_%C3%A0_t%C3%AAte_blanche', 
          'pic'=>'http://media.eol.org/content/2012/06/12/23/37606_orig.jpg'),
@@ -608,7 +639,8 @@ function _observation_oiseaux_pic($select) {
 
 //debug(simplify_pic_array($options['Espèces communes']));
     if ($select==true){
-      return array('Espèces communes'=>simplify_pic_array($options['Espèces communes']),
+      return array('Oiseaux déjà Observé'=>simplify_pic_array($options['Oiseaux déjà Observé']),
+				   'Espèces communes'=>simplify_pic_array($options['Espèces communes']),
                    'Autres espèces'=>simplify_pic_array($options['Autres espèces']),
           );
     } else {

@@ -654,9 +654,10 @@ return $form;
 
 function nids_obscour_form($form, &$form_state) {
 	global $user;
-  $path=drupal_get_path_alias(current_path());
-  $obsEdit = $_GET['id'];
-  $myObsCour = array();
+	$path=drupal_get_path_alias(current_path());
+	if(isset($_GET['id']))
+		$obsEdit = $_GET['id'];
+	$myObsCour = array();
 		if(isset($obsEdit)){
 			$query = db_select('nids_oiseaux_cour', 'n');
 			$query->join('nids_users', 't', 'n.uid = t.uid');
