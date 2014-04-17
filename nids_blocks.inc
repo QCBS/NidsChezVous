@@ -23,7 +23,7 @@ function nids_block_info() {
 		'pages' => 'explorer/oiseaux_cours'
 		);
 
-	$blocks['nids_oiseaux_ma_cour_liste'] = array(
+	$blocks['nids_oiseaux_ma_cour_list'] = array(
 		'info' => t('A block to show nids_observations_dans_ta_cour datasets'),
 		'cache' => DRUPAL_NO_CACHE,
 		'region' => 'content',
@@ -69,7 +69,7 @@ function nids_block_obs_oiseaux(){
 
 function nids_block_mes_obs_oiseaux(){
 	$block = module_invoke('nids', 'block_view', 'nids_oiseaux_ma_cour_liste');
-	return $block['content'];
+	return $block;
 }
 
 function nids_obsv3(){
@@ -362,7 +362,7 @@ elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 
 	$content=theme('table', array('header' => $header, 'rows' => $rows));
 	$block = array(
-		'subject' => t('Liste d\'observations dans MES cours'),
+		'subject' => '',
 		'content' => $content,
 		);
 	return $block;

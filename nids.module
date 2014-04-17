@@ -516,8 +516,8 @@ function myDelete(){
 function myText($id, $type){
 	$options = array('absolute' => TRUE, 'query' => array('id' => $id, 'type' => $type));
   return 
-   '<div>
-  	<h1>Est-tu certain?</h1> 
+   '<div style="margin-bottom:100px;">
+  	<h1>Effacer l\'observation?</h1> 
 	<li class="first leaf ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="width: 300px; list-style-type: none; padding: 5px; margin: 5px;">
 		<span class="ui-button-text">
         <a href='.url('supprimer/Oui', $options).'></a>
