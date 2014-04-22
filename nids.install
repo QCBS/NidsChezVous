@@ -340,6 +340,7 @@ function nids_install() {
       ))->execute();
   }
   $oiseauxPic = _observation_oiseaux();
+  //Function name changed??
   foreach($oiseauxPic["Espèces communes"] as $key=>$value){
   		db_insert('nids_oiseaux_pic')
   		->fields(array('oiseaux_name'=>$key))

@@ -49,35 +49,26 @@ function _observation_oiseaux_pic($select) {
 	//Gets the names of birds that have already been oberved by YOU!
 	$query1=db_select('nids_oiseaux_cour','t');
 	$query1->join('nids_users', 'u', 't.uid = u.uid');
+	$query1->join('nids_oiseaux_pic', 'm', 't.oiseau_espece = m.oiseaux_name');
 	$query1->fields('t',array('oiseau_espece'))
 		   ->distinct()
-		   ->fields('u',array('prenom', 'nom_famille'));
+		   ->fields('u',array('prenom', 'nom_famille'))
+		   ->fields('m',array('oiseaux_id', 'oiseaux_name', 'description', 'oiseaux_link'));
 	$result = $query1->execute();
 	$count = $result->rowCount();
+	drupal_set_message('here1 plus row count is: '.$count, 'status');
 	if($count > 0){
 		$myBirds = array();
-		// No that i have the birds i need to somehow get the url and pic, this is too inconvenient
-		/*
+		// Now that i have the birds and their url i need to make some sort of for loop so list can get created dynamicaly
 		foreach ($result as $node1) {
-			// Go to nids_oiseaux_pic to get the url and pic column
-			$query2=db_select('nids_oiseaux_pic','t'); 
-			$query2->fields('t',array('oiseaux_id', 'oiseaux_name', 'description', 'oiseaux_link',))
-			->condition('oiseaux_name',$node1->oiseau_espece,'=');
-			$result2 = $query2->execute();
-			//debug($result2);
-			foreach ($result2 as $node2)
-				debug($node2);
+			$myBirds[] = array('espece' => $node1->oiseaux_name, 'url' => $node1->description, 'pic' => $node1->oiseaux_link);	
 		}
-		*/
+		debug($myBirds);
 	}
   
   $options = array(
         null=>"Choisir...",
 		"Oiseaux déjà Observé" => array( //"--- Oiseaux déjà Observé ---",
-		array('espece'=>'Still in testing stage',
-            'url'=>'',
-            'pic'=>''),
-			
 			),
 			
         "Espèces communes"=>array( //"--- Espèces communes ---",
@@ -636,7 +627,14 @@ function _observation_oiseaux_pic($select) {
          'pic'=>'http://media.eol.org/content/2013/07/02/04/48770_orig.jpg'),
       ),
     );
-
+	
+	for($i = 0; $i < count($myBirds); $i++){
+		$options['Oiseaux déjà Observé'][$i] =
+			array('espece'=> $myBirds[$i]['espece'], 
+				'url'=> $myBirds[$i]['url'], 
+				'pic'=> $myBirds[$i]['pic']);
+	}
+	
 //debug(simplify_pic_array($options['Espèces communes']));
     if ($select==true){
       return array('Oiseaux déjà Observé'=>simplify_pic_array($options['Oiseaux déjà Observé']),
