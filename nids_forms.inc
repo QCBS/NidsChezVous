@@ -564,8 +564,7 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#default_value' => isset($obsEdit) && $myObs['rien_vu'] ? true : false,
     );
 
-
-  $form['espece'] = array(
+  $form['espece_0'] = array(
     '#title' => t("Quelle espèce?"),
     '#type' => 'select',
     '#options' => array(
@@ -573,7 +572,7 @@ function nids_obsnichoir_form($form, &$form_state) {
       'Moineau domestique' => 'Moineau domestique',
       'Hirondelle bicolore' => 'Hirondelle bicolore',
       'Mésange à tête noire' => 'Mésange à tête noire',
-      'Mésange brune' => 'Mésange brune',
+      'Mésange à tête brune' => 'Mésange à tête brune',
       'Sitelle à poitrine rousse' => 'Sitelle à poitrine rousse',
       'Merlebleu de l\'Est' => 'Merlebleu de l\'Est',
       'Inconnue' => 'Inconnue',
@@ -587,33 +586,21 @@ function nids_obsnichoir_form($form, &$form_state) {
         ),
       ),
     );
-	//================================================================================================================================
 	// here2
-	
-	$form['photo'] = array(
-		'#type' => 'textfield',
-		'#name' => 'photo_attempt',
+	$form['oiseau'] = array(
+		'#type' => 'hidden',
 		'#size' => 10,
-		'#value' => 'Testing...this should be the picture',
-		'#prefix'=>'<td><div id="photodiv'. 2 .'">',
-		'#suffix' => '</div></td></tr>',
-		'#ajax' => array(
-			'callback' => 'ajax_oiseau_pic_callback',
-			'event' => 'mousedown',
-			'wrapper' => 'oiseaux-div',
-			'method' => 'replace',
-			'effect' => 'fade',
-			)
+		'#prefix'=>'<div id="photodiv0">',
+		'#suffix' => '</div>',
 	);
 	
-	//================================================================================================================================
   $form['espece_autre'] = array(
     '#type' => 'textfield',
     '#size' => 70,
     '#title' => '<h4>'.t("Veuillez préciser l'espèce:").'</h4>',
     '#states' => array(
       'visible' => array(
-        ':input[name="espece"]' => array('value' => 'Autre'),
+        ':input[name="espece_0"]' => array('value' => 'Autre'),
         ),
       ),
     '#default_value' => isset($obsEdit) && !$myObs['rien_vu'] && isset($myObs['oiseau_espece'])? $myObs['oiseau_espece_autre']:'',
@@ -663,6 +650,7 @@ $module_path = base_path().drupal_get_path('module', 'nids');
 $js_files = array(
   $module_path . '/javascript/nids.jqueryui.js',
   $module_path . '/javascript/selectboxit.js',
+  $module_path . '/javascript/nids.pics.js',
   );
 $form['#attached']['js'] = $js_files;
 $form['#validate'][] = 'nids_obsnichoir_form_validate';
@@ -944,7 +932,7 @@ function cour_form_submit($form, &$form_state) {
 }
 
 function nids_obsnichoir_form_validate($form, &$form_state){
-  if ($form_state['values']['espece']=='' && $form_state['values']['rien_vu']==0){
+  if ($form_state['values']['espece_0']=='' && $form_state['values']['rien_vu']==0){
     form_set_error('espece',t('Veuillez choisir une espèce ou indiquer "je n\'ai rien vu"'));
   }
 
@@ -968,7 +956,7 @@ function nids_obsnichoir_form_submit($form, &$form_state){
           'rien_vu' => $form_state['values']['rien_vu'],
           'type_obs' => $form_state['values']['type_obs'],
           'type_obs_autre' => $form_state['values']['type_obs_autre'],
-          'oiseau_espece' => $form_state['values']['espece'],
+          'oiseau_espece' => $form_state['values']['espece_0'],
           'oiseau_espece_autre' => $form_state['values']['espece_autre'],
         );
         
@@ -1020,18 +1008,25 @@ function ajax_oiseaux_pics_callback(){
   $photo=array();
   $oiseaux=_observation_oiseaux_pic(false);
   $oi=$_POST['oiseau'];
-  $key=recursive_array_search($oi,$oiseaux['Espèces communes']);
-  if($key===false){
-    $key=recursive_array_search($oi,$oiseaux['Autres espèces']);
-    $photo['link']=$oiseaux['Autres espèces'][$key]['pic'];
-    $photo['info']=$oiseaux['Autres espèces'][$key]['url'];
-  }else{
-    $photo['link']=$oiseaux['Espèces communes'][$key]['pic'];
-    $photo['info']=$oiseaux['Espèces communes'][$key]['url'];
+  
+  $key=recursive_array_search($oi,$oiseaux['Oiseaux déjà observés']);
+  $key1=recursive_array_search($oi,$oiseaux['Espèces communes']);
+  $key2=recursive_array_search($oi,$oiseaux['Autres espèces']);
+  
+  if($key !== false){
+    $photo['link']=$oiseaux['Oiseaux déjà observés'][$key]['pic'];
+    $photo['info']=$oiseaux['Oiseaux déjà observés'][$key]['url'];
+  }
+  if($key1 !== false){
+    $photo['link']=$oiseaux['Espèces communes'][$key1]['pic'];
+    $photo['info']=$oiseaux['Espèces communes'][$key1]['url'];
+  }
+  if($key2 !== false){
+	$photo['link']=$oiseaux['Autres espèces'][$key2]['pic'];
+    $photo['info']=$oiseaux['Autres espèces'][$key2]['url'];
   }
   drupal_json_output($photo);
 }
-
 
 function recursive_array_search($needle,$haystack) {
     foreach($haystack as $key=>$value) {

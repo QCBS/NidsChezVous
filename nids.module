@@ -212,7 +212,6 @@ function nids_menu() {
     'page callback' => 'nids_list',
     );
 
-
   $items['explorer/mes_nichoirs'] = array(
     'title'           => t('Mes nichoirs'),
     'description'     => t('Mes nichoirs'),
