@@ -598,4 +598,8 @@ function ajax_ajout_oiseau_callback($form, $form_state) {
   return $form['oiseau'];
 }
 
+function ajax_oiseau_pic_callback($form, $form_state) {
+  return $form['oiseau'];
+}
+
 ?>

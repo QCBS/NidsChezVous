@@ -1,6 +1,8 @@
 /*global jQuery, window, document, self, _gaq, Drupal, google */
 (function($) {
 
+drupal_set_message('here', 'status');
+
   Drupal.behaviors.nids_map = {
 
     map: {}, map_center: {}, marker_icon: {}, polygon_icon: {},

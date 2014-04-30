@@ -587,7 +587,26 @@ function nids_obsnichoir_form($form, &$form_state) {
         ),
       ),
     );
-
+	//================================================================================================================================
+	// here2
+	
+	$form['photo'] = array(
+		'#type' => 'textfield',
+		'#name' => 'photo_attempt',
+		'#size' => 10,
+		'#value' => 'Testing...this should be the picture',
+		'#prefix'=>'<td><div id="photodiv'. 2 .'">',
+		'#suffix' => '</div></td></tr>',
+		'#ajax' => array(
+			'callback' => 'ajax_oiseau_pic_callback',
+			'event' => 'mousedown',
+			'wrapper' => 'oiseaux-div',
+			'method' => 'replace',
+			'effect' => 'fade',
+			)
+	);
+	
+	//================================================================================================================================
   $form['espece_autre'] = array(
     '#type' => 'textfield',
     '#size' => 70,
@@ -796,7 +815,7 @@ $form['oiseau']['photo_'.$i] = array(
   '#prefix'=>'<td><div id="photodiv'.$i.'">',
   '#suffix' => '</div></td></tr>',
   );
-
+//here1
 
 }
 
