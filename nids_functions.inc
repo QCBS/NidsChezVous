@@ -18,14 +18,14 @@ function my_delete()
  		drupal_goto('explorer');
  	}
  	elseif($type == "nichoir") {
-  		drupal_set_message('Replaced by drupal supprimée ','status');
+  		drupal_set_message('Nichoir supprimé ','status');
  		drupal_goto('explorer');
  	}
 }
 
 function my_ignored()
 {
-  	drupal_set_message('Observation demeuré!','status');
+  drupal_set_message('l\'observation n\'a pas été effacée!','status');
  	drupal_goto('explorer');
 }
 
@@ -56,7 +56,7 @@ function _observation_oiseaux_pic($select) {
 		   ->fields('m',array('oiseaux_id', 'oiseaux_name', 'description', 'oiseaux_link'));
 	$result = $query1->execute();
 	$count = $result->rowCount();
-	drupal_set_message('here1 plus row count is: '.$count, 'status');
+	//drupal_set_message('here1 plus row count is: '.$count, 'status');
 	if($count > 0){
 		$myBirds = array();
 		// Now that i have the birds and their url i need to make some sort of for loop so list can get created dynamicaly
