@@ -46,29 +46,28 @@ function _nichoir_type_observation($key = NULL) {
 }
 
 function _observation_oiseaux_pic($select) {
+	$myBirds = array();
 	//Gets the names of birds that have already been oberved by YOU!
 	$query1=db_select('nids_oiseaux_cour','t');
 	$query1->join('nids_users', 'u', 't.uid = u.uid');
-	$query1->join('nids_oiseaux_pic', 'm', 't.oiseau_espece = m.oiseaux_name');
 	$query1->fields('t',array('oiseau_espece'))
 		   ->distinct()
-		   ->fields('u',array('prenom', 'nom_famille'))
-		   ->fields('m',array('oiseaux_id', 'oiseaux_name', 'description', 'oiseaux_link'));
+		   ->fields('u',array('prenom', 'nom_famille'));
 	$result = $query1->execute();
 	$count = $result->rowCount();
+<<<<<<< HEAD
 	//drupal_set_message('here1 plus row count is: '.$count, 'status');
+=======
+>>>>>>> aaca7c9221a03b09fdc169299f6ab8e54aa23e01
 	if($count > 0){
-		$myBirds = array();
-		// Now that i have the birds and their url i need to make some sort of for loop so list can get created dynamicaly
 		foreach ($result as $node1) {
-			$myBirds[] = array('espece' => $node1->oiseaux_name, 'url' => $node1->description, 'pic' => $node1->oiseaux_link);	
+			$myBirds[] = array('espece' => $node1->oiseau_espece);	
 		}
-		debug($myBirds);
 	}
   
   $options = array(
         null=>"Choisir...",
-		"Oiseaux déjà Observé" => array( //"--- Oiseaux déjà Observé ---",
+		"Oiseaux déjà observés" => array( //"--- Oiseaux déjà Observé ---",
 			),
 			
         "Espèces communes"=>array( //"--- Espèces communes ---",
@@ -628,16 +627,11 @@ function _observation_oiseaux_pic($select) {
       ),
     );
 	
-	for($i = 0; $i < count($myBirds); $i++){
-		$options['Oiseaux déjà Observé'][$i] =
-			array('espece'=> $myBirds[$i]['espece'], 
-				'url'=> $myBirds[$i]['url'], 
-				'pic'=> $myBirds[$i]['pic']);
-	}
+	$options= birds_already_observed($options, $myBirds);
 	
 //debug(simplify_pic_array($options['Espèces communes']));
     if ($select==true){
-      return array('Oiseaux déjà Observé'=>simplify_pic_array($options['Oiseaux déjà Observé']),
+      return array('Oiseaux déjà observés'=>simplify_pic_array($options['Oiseaux déjà observés']),
 				   'Espèces communes'=>simplify_pic_array($options['Espèces communes']),
                    'Autres espèces'=>simplify_pic_array($options['Autres espèces']),
           );
@@ -657,6 +651,32 @@ function simplify_pic_array($options){
     $opts=$opts+$op;
   }
   return $opts;
+}
+
+function birds_already_observed($options, $myBirds){
+		foreach($options['Espèces communes']  as $key=>$value){
+			for($i = 0; $i < count($myBirds); $i++){
+				if($value['espece'] == $myBirds[$i]['espece']){
+					$options['Oiseaux déjà observés'][$i] =
+					array('espece'=> $value['espece'], 
+						  'url'=> $value['url'],
+						  'pic'=> $value['pic']);
+						  unset($options['Espèces communes'][$key]);
+				}
+			}
+		}
+		foreach($options['Autres espèces']  as $key=>$value){
+			for($i = 0; $i < count($myBirds); $i++){
+				if($value['espece'] == $myBirds[$i]['espece']){
+					$options['Oiseaux déjà observés'][$i] =
+					array('espece'=> $value['espece'], 
+						  'url'=> $value['url'],
+						  'pic'=> $value['pic']);
+						  unset($options['Autres espèces'][$key]);
+				}
+			}
+		}
+	return $options;
 }
 
 function nids_map($width,$height){

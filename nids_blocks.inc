@@ -96,8 +96,6 @@ function nids_list(){
 	return $output;
 }
 
-
-
 /**
  * Implements hook_block_view().
  */
@@ -137,12 +135,13 @@ function nids_block_view($block_name = '') {
 				);
 		}
 
-		$query = db_select('nids_nichoirs', 'n');
+		$query = db_select('nids_nichoirs', 'n')->extend('PagerDefault');
 		$query->join('nids_users', 'u', 'n.uid = u.uid');
 		$query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
 			'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
 			'habitat', 'hauteur', 'orientation', 'trou'))
-		->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header);
+		->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header)
+		->limit(100);
 
 		$result = $query->execute();
 		global $user;
@@ -206,11 +205,11 @@ return $block;
 }  
 
 elseif ($block_name == 'nids_list_own_nichoirs') {
-	$query = db_select('nids_nichoirs', 'n');
+	$query = db_select('nids_nichoirs', 'n')->extend('PagerDefault');
 	$query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
 		'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
-		'habitat', 'hauteur', 'orientation', 'trou'))->condition('uid',$user->uid,'=');
-
+		'habitat', 'hauteur', 'orientation', 'trou'))->condition('uid',$user->uid,'=')
+		->limit(100);
 	$result = $query->execute();
 	$geog=array();
 	foreach ($result as $node1) {
@@ -290,11 +289,12 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 			array('data' => t('Nombre d\'individus'), 'field' => 'nombre_individus'),
 			);
 	}
-	$query2=db_select('nids_oiseaux_cour','t');
+	$query2=db_select('nids_oiseaux_cour','t')->extend('PagerDefault');
 	$query2->join('nids_users', 'u', 't.uid = u.uid');
 	$query2->fields('t',array('obs_id', 'uid', 'ecole', 'date_obs',
 		'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))
-	->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header);
+	->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header)
+	->limit(100);
 	$result = $query2->execute();
 
 	foreach ($result as $node2) {
@@ -340,12 +340,13 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 	
 	$header = array(t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));
-	$query2=db_select('nids_oiseaux_cour','t'); 
+	$query2=db_select('nids_oiseaux_cour','t')->extend('PagerDefault'); 
 	$query2->fields('t',array('obs_id', 'uid', 'date_obs', 
 		'rien_vu', 'duree_obs', 'oiseau_espece', 'nombre_individus'))->extend('TableSort')->orderByHeader($header)
 		->condition('uid',$user->uid,'=')
 		->condition('ecole','','=')
-		->orderBy('obs_id', 'DESC');
+		->orderBy('obs_id', 'DESC')
+		->limit(100);
 	$result = $query2->execute();
 	foreach ($result as $node2) {
 		$options = array('absolute' => TRUE, 'query' => array('id' => $node2->obs_id, 'type' => "observation"));
@@ -384,13 +385,12 @@ elseif ($block_name == 'nids_nichoirs_obs_list') {
 			array('data'=>t('Type d\'observation'),'field' => 'type_obs'),
 			);
 		}
-
-	$query3=db_select('nids_nichoirs_obs','t');
+	$query3=db_select('nids_nichoirs_obs','t')->extend('PagerDefault');
 	$query3->join('nids_users', 'u', 't.uid = u.uid');
 	$query3->fields('t',array('obs_id', 'uid', 'nid_id', 'date_obs', 
 		'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
-	->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header);
-
+	->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header)
+	->limit(100);
 	$result = $query3->execute();
 
 	foreach ($result as $node3) {
@@ -424,7 +424,7 @@ elseif ($block_name == 'nids_nichoirs_obs_list') {
 	}
 
     //Return the content of the block
-	$content=theme('table', array('header' => $header, 'rows' => $rows));
+	$content=theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
 
 	$block = array(
 		'subject' => t('List of nids observations datasets'),
@@ -436,12 +436,13 @@ elseif ($block_name == 'nids_nichoirs_obs_list') {
 elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 	$myNode = menu_get_object();
 	$myNode2 = $myNode->nid;
-	$query5=db_select('nids_nichoirs_obs','t');
+	$query5=db_select('nids_nichoirs_obs','t')->extend('PagerDefault');
 	$query5->join('nids_users', 'u', 't.uid = u.uid');
 	$query5->fields('t',array('obs_id', 'uid', 'nid_id', 'date_obs', 
 		'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
 	->fields('u',array('prenom', 'nom_famille'))
-	->condition('nid_id',$myNode2,'=');
+	->condition('nid_id',$myNode2,'=')
+	->limit(100);
 	$result = $query5->execute();
 
 	foreach ($result as $node3) {

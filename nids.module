@@ -212,7 +212,6 @@ function nids_menu() {
     'page callback' => 'nids_list',
     );
 
-
   $items['explorer/mes_nichoirs'] = array(
     'title'           => t('Mes nichoirs'),
     'description'     => t('Mes nichoirs'),
@@ -595,6 +594,10 @@ function connexion_callback(){
 
 
 function ajax_ajout_oiseau_callback($form, $form_state) {
+  return $form['oiseau'];
+}
+
+function ajax_oiseau_pic_callback($form, $form_state) {
   return $form['oiseau'];
 }
 
