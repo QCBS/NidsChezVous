@@ -55,10 +55,6 @@ function _observation_oiseaux_pic($select) {
 		   ->fields('u',array('prenom', 'nom_famille'));
 	$result = $query1->execute();
 	$count = $result->rowCount();
-<<<<<<< HEAD
-	//drupal_set_message('here1 plus row count is: '.$count, 'status');
-=======
->>>>>>> aaca7c9221a03b09fdc169299f6ab8e54aa23e01
 	if($count > 0){
 		foreach ($result as $node1) {
 			$myBirds[] = array('espece' => $node1->oiseau_espece);	
