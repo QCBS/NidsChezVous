@@ -20,7 +20,7 @@
     },
 
     createMap: function() {
-      this.map_center = new google.maps.LatLng(48.45,-68.5);
+      this.map_center = new google.maps.LatLng(48.43,-68.53);
       this.map = new google.maps.Map($("#map")[0], {
         zoom: 11,
         center: this.map_center,
@@ -222,10 +222,16 @@
       }
     },
 
-    createMarker: function(position, icon) {
+    createMarker: function(position, icon, utilise) {
+      if (utilise==1){
+        zind=999;
+      }else{
+        zind=1;
+      }
       return new google.maps.Marker({
         position: position,
         map: this.map,
+        zIndex: zind,
         draggable: (this.isEditMode()) ? true : false,
         icon: icon
       });
@@ -255,7 +261,7 @@
         }
       }
 
-      marker = this.createMarker(position, marker_icon);
+      marker = this.createMarker(position, marker_icon,utilise);
       infowindow = this.createInfoWindow(contentString);
       this.markers.push(marker);
       this.infowindows.push(infowindow);

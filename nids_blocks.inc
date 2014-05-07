@@ -496,17 +496,16 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 
 elseif ($block_name == 'home_page_data') {
 	$myInfo = array('numParticipants' => getCount('nids_users', false), 'numNests' => getCount('nids_nichoirs', false), 
-					'numEspeces' => getCount('nids_oiseaux_cour', false), 'numObservations' => getCount('nids_nichoirs_obs',false),
+					'numEspeces' => getCount('nids_oiseaux_cour', true), 'numObservations' => getCount('nids_oiseaux_cour',false),
 					'numOccuper' => getCount('nids_nichoirs_obs', true));
 	$content=
 	'<div style="margin: -30px 5px 10px 10px;">
 		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numParticipants']. '</text> participants  &nbsp&nbsp
-		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numObservations']. '</text> observations d\'oiseaux dans les cours  &nbsp&nbsp
 		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numNests']. '</text> nichoirs installés   &nbsp&nbsp
-		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numEspeces']. '</text> espèces observées   &nbsp&nbsp
 		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numOccuper']. '</text> nichoirs occupés   &nbsp&nbsp
+		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numObservations']. '</text> observations d\'oiseaux dans les cours de &nbsp
+		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numEspeces']. '</text> espèces différentes
 	</div>';
-
     //Return the content of the block
 	$block = array(
 		'subject' => t('List of nids observations datasets'),
@@ -517,7 +516,7 @@ elseif ($block_name == 'home_page_data') {
 
 }
 function getCount($myTable, $all){
-	if($myTable === 'nids_oiseaux_cour'){
+	if($myTable === 'nids_oiseaux_cour' && $all === true){
 		$query1=db_select($myTable,'u')
 		->fields('u', array('oiseau_espece'))
 		->distinct()
@@ -525,16 +524,18 @@ function getCount($myTable, $all){
 		$numRows = $query1->rowCount();
 	}
 	elseif($myTable === 'nids_nichoirs_obs' && $all === true){
-		/*$query1=db_select('nbr_nichoirs_occupes','u')
+		
+		$query1=db_query("SELECT count(b.obs_id) AS cnt FROM ( SELECT max(nids_nichoirs_obs.obs_id) AS mid FROM nids_nichoirs_obs GROUP BY nids_nichoirs_obs.nid_id) a, nids_nichoirs_obs b WHERE a.mid = b.obs_id AND NULLIF(b.type_obs::text, ''::text)::integer <= 8")->fetchField();
+		/*
+		$query1=db_select('nbr_nichoirs_occupes','u')
 		->fields('u')
 		->execute()
 		->fetchAll();*/
-		$numRows = 7;//$query1->cnt;
+		$numRows=$query1;
 	}
 	else{
 		$query1=db_select($myTable,'u')
 		->fields('u')
-		->distinct()
 		->execute();
 		$numRows = $query1->rowCount();
 	}
