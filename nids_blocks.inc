@@ -500,10 +500,11 @@ elseif ($block_name == 'home_page_data') {
 					'numOccuper' => getCount('nids_nichoirs_obs', false));
 	$content=
 	'<ul>
-		<li>' .$myInfo['numObservations']. ' observations d\'oiseaux</li>
-		<li>' .$myInfo['numEspeces']. ' espèses observés</li>
-		<li>' .$myInfo['numOccuper']. ' nichoir occupés sur un total de '.$myInfo['numNests'].'</li>
-		<li>' .$myInfo['numParticipants']. ' participant</li>
+		<text style="font-size: 25px">' .$myInfo['numObservations']. '</text> observations d\'oiseaux <br>
+		<text style="font-size: 25px">' .$myInfo['numEspeces']. '</text> espèces observées <br>
+		<text style="font-size: 25px">' .$myInfo['numNests']. '</text> nichoirs en totale <br>
+		<text style="font-size: 25px">' .$myInfo['numOccuper']. '</text> nichoirs occupés <br>
+		<text style="font-size: 25px">' .$myInfo['numParticipants']. '</text> participants <br>
 	</ul>';
 
     //Return the content of the block
@@ -524,20 +525,16 @@ function getCount($myTable, $all){
 		$numRows = $query1->rowCount();
 	}
 	elseif($myTable === 'nids_nichoirs_obs' && $all === true){
-		$query2 = db_select('nids_nichoirs_obs', 'n')
-		->fields('n',array('nid_id', 'type_obs'))
-		->distinct(1);
-		
-		$db_or = db_or();
-		$db_or->condition('type_obs', '9' , '<');
-		$db_or->condition('type_obs', '' , '<>');
-		$rc= $query2->condition($db_or)
-			->execute();
-		$numRows = $rc->rowCount();
+		$query1=db_select('nbr_nichoirs_occupes','u')
+		->fields('u')
+		->execute()
+		->fetchAll();
+		$numRows = $query1->cnt;
 	}
 	else{
 		$query1=db_select($myTable,'u')
 		->fields('u')
+		->distinct()
 		->execute();
 		$numRows = $query1->rowCount();
 	}
