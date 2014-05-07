@@ -526,11 +526,6 @@ function getCount($myTable, $all){
 	elseif($myTable === 'nids_nichoirs_obs' && $all === true){
 		
 		$query1=db_query("SELECT count(b.obs_id) AS cnt FROM ( SELECT max(nids_nichoirs_obs.obs_id) AS mid FROM nids_nichoirs_obs GROUP BY nids_nichoirs_obs.nid_id) a, nids_nichoirs_obs b WHERE a.mid = b.obs_id AND NULLIF(b.type_obs::text, ''::text)::integer <= 8")->fetchField();
-		/*
-		$query1=db_select('nbr_nichoirs_occupes','u')
-		->fields('u')
-		->execute()
-		->fetchAll();*/
 		$numRows=$query1;
 	}
 	else{
