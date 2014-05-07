@@ -496,11 +496,11 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 
 elseif ($block_name == 'home_page_data') {
 	$myInfo = array('numParticipants' => getCount('nids_users', false), 'numNests' => getCount('nids_nichoirs', false), 
-					'numEspeces' => getCount('nids_oiseaux_cour', false), 'numObservations' => getCount('nids_nichoirs_obs',true),
-					'numOccuper' => getCount('nids_nichoirs_obs', false));
+					'numEspeces' => getCount('nids_oiseaux_cour', true), 'numObservations' => getCount('nids_oiseaux_cour',false),
+					'numOccuper' => getCount('nids_nichoirs_obs', true));
 	$content=
 	'<ul>
-		<text style="font-size: 25px">' .$myInfo['numObservations']. '</text> observations d\'oiseaux <br>
+		<text style="font-size: 25px">' .$myInfo['numObservations']. '</text> oiseaux observés dans les cours<br>
 		<text style="font-size: 25px">' .$myInfo['numEspeces']. '</text> espèces observées <br>
 		<text style="font-size: 25px">' .$myInfo['numNests']. '</text> nichoirs en totale <br>
 		<text style="font-size: 25px">' .$myInfo['numOccuper']. '</text> nichoirs occupés <br>
@@ -517,14 +517,14 @@ elseif ($block_name == 'home_page_data') {
 
 }
 function getCount($myTable, $all){
-	if($myTable === 'nids_oiseaux_cour'){
+	if($myTable === 'nids_oiseaux_cour' && $all === true){
 		$query1=db_select($myTable,'u')
 		->fields('u', array('oiseau_espece'))
 		->distinct()
 		->execute();
 		$numRows = $query1->rowCount();
 	}
-	elseif($myTable === 'nids_nichoirs_obs' && $all === true){
+	elseif($myTable === 'nids_nichoirs_obs4' && $all === true){
 		$query1=db_select('nbr_nichoirs_occupes','u')
 		->fields('u')
 		->execute()
@@ -534,7 +534,6 @@ function getCount($myTable, $all){
 	else{
 		$query1=db_select($myTable,'u')
 		->fields('u')
-		->distinct()
 		->execute();
 		$numRows = $query1->rowCount();
 	}
