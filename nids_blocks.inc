@@ -92,7 +92,7 @@ function nids_own_blocklist(){
 }
 
 function nids_list(){
-	$output=nids_map(900,500).nids_blocklist();
+	$output=nids_map(970,550).nids_blocklist();
 	return $output;
 }
 
@@ -196,7 +196,7 @@ if(empty($header))
 		t('Orientation'),t('Occupé?'));
 
     //Return the content of the block
-$content=theme('table', array('header' => $header, 'rows' => $rows));
+$content=theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
 $block = array(
 	'subject' => t(''),
 	'content' => $content,
@@ -263,7 +263,7 @@ elseif ($block_name == 'nids_list_own_nichoirs') {
 		);
 	$content="<input type='hidden' name='geography' value='".json_encode($arr,JSON_UNESCAPED_SLASHES)."'>";
 	$content.="<div id='map' style='width: 100%;height: 500px;max-width: 95%;max-height: 85%;'></div><br><br>";
-	$content.=theme('table', array('header' => $header, 'rows' => $rows));
+	$content.=theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
 	$block = array(
 		'subject' => t(''),
 		'content' => $content,
@@ -329,7 +329,7 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 	}
 
     //Return the content of the block
-	$content=theme('table', array('header' => $header, 'rows' => $rows));
+	$content=theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
 	$block = array(
 		'subject' => t('Liste d\'observations dans toutes les cours'),
 		'content' => $content,
@@ -361,7 +361,7 @@ elseif ($block_name == 'nids_oiseaux_ma_cour_liste') {
 		$rows[] = array($node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus, $edit, $delete);
 	}
 
-	$content=theme('table', array('header' => $header, 'rows' => $rows));
+	$content=theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
 	$block = array(
 		'subject' => '',
 		'content' => $content,
@@ -477,7 +477,7 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 	}
 
     //Return the content of the block
-	$content=theme('table', array('header' => $header, 'rows' => $rows));
+	$content=theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
 	$block = array(
 		'subject' => t('List of nids observations datasets'),
 		'content' => $content,

@@ -48,17 +48,12 @@ function _nichoir_type_observation($key = NULL) {
 function _observation_oiseaux_pic($select) {
 	$myBirds = array();
 	//Gets the names of birds that have already been oberved by YOU!
+  global $user;
 	$query1=db_select('nids_oiseaux_cour','t');
-	$query1->join('nids_users', 'u', 't.uid = u.uid');
 	$query1->fields('t',array('oiseau_espece'))
-		   ->distinct()
-		   ->fields('u',array('prenom', 'nom_famille'));
+		   ->distinct()->condition('uid',$user->id,'=');
 	$result = $query1->execute();
 	$count = $result->rowCount();
-<<<<<<< HEAD
-	//drupal_set_message('here1 plus row count is: '.$count, 'status');
-=======
->>>>>>> aaca7c9221a03b09fdc169299f6ab8e54aa23e01
 	if($count > 0){
 		foreach ($result as $node1) {
 			$myBirds[] = array('espece' => $node1->oiseau_espece);	
@@ -627,14 +622,19 @@ function _observation_oiseaux_pic($select) {
       ),
     );
 	
-	$options= birds_already_observed($options, $myBirds);
-	
-//debug(simplify_pic_array($options['Espèces communes']));
-    if ($select==true){
+
+    if ($select==true) {
+      if ($count > 0){
+      $options= birds_already_observed($options, $myBirds);
       return array('Oiseaux déjà observés'=>simplify_pic_array($options['Oiseaux déjà observés']),
-				   'Espèces communes'=>simplify_pic_array($options['Espèces communes']),
+				           'Espèces communes'=>simplify_pic_array($options['Espèces communes']),
                    'Autres espèces'=>simplify_pic_array($options['Autres espèces']),
           );
+      } else {
+      return array('Espèces communes'=>simplify_pic_array($options['Espèces communes']),
+                   'Autres espèces'=>simplify_pic_array($options['Autres espèces']),
+          );        
+      }
     } else {
       return $options;
     }
