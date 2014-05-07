@@ -57,10 +57,17 @@ function nids_block_info() {
 		'visibility' => BLOCK_VISIBILITY_LISTED,
 		'pages' => 'explorer/mes_nichoirs'
 		);
+		
+	$blocks['home_page_data'] = array(
+		'info' => t('A block to display some stats from the databases'),
+		'cache' => DRUPAL_NO_CACHE,
+		'region' => 'content',
+		'status' => TRUE,
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+		'pages' => 'home'
+		);
 	return $blocks;
 }
-
- 
 
 function nids_block_obs_oiseaux(){
 	$block = module_invoke('nids', 'block_view', 'nids_oiseaux_cour_liste');
@@ -96,6 +103,10 @@ function nids_list(){
 	return $output;
 }
 
+function home_page_data(){
+	$block = module_invoke('nids', 'block_view', 'home_page_data');
+	return $block['content'];
+}
 /**
  * Implements hook_block_view().
  */
@@ -313,11 +324,9 @@ elseif ($block_name == 'nids_oiseaux_cour_liste') {
 				$ecole = $node2->ecole;
 			}
 		
-		
 			$urlDel = url('supprimer', $options);
 			$edit='<a href='.$url.'>Edit</a>';
 			$delete='<a href='.$urlDel.'>Supprimer</a>';
-			
 			
 			$header = array(t('Participant'), t('Emplacement'), t('Date d\'observation'), t('Durée d\'observation (min)'), t('Espèce'),t('Nombre d\'individus'));      
 			$rows[] = array($node2->prenom. ' ' .$node2->nom_famille, $ecole, $node2->date_obs, $node2->duree_obs, $oiseau, $node2->nombre_individus, $edit, $delete);
@@ -473,7 +482,6 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 			$rows[] = array($node3->date_obs,$myObs, $typeObsv);
 			$header = array(t('Date d\'Observation'), t('Oiseau Èspece'), t('Type d\'Observation'));
 		}
-
 	}
 
     //Return the content of the block
@@ -484,9 +492,56 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 		);
 	return $block;
 } 
+// Home page block view
 
+elseif ($block_name == 'home_page_data') {
+	$myInfo = array('numParticipants' => getCount('nids_users', false), 'numNests' => getCount('nids_nichoirs', false), 
+					'numEspeces' => getCount('nids_oiseaux_cour', false), 'numObservations' => getCount('nids_nichoirs_obs',true),
+					'numOccuper' => getCount('nids_nichoirs_obs', false));
+	$content=
+	'<ul>
+		<li>' .$myInfo['numObservations']. ' observations d\'oiseaux</li>
+		<li>' .$myInfo['numEspeces']. ' espèses observés</li>
+		<li>' .$myInfo['numOccuper']. ' nichoir occupés sur un total de '.$myInfo['numNests'].'</li>
+		<li>' .$myInfo['numParticipants']. ' participant</li>
+	</ul>';
+
+    //Return the content of the block
+	$block = array(
+		'subject' => t('List of nids observations datasets'),
+		'content' => $content, //drupal_render($content),
+		);
+	return $block;
 }
 
-
+}
+function getCount($myTable, $all){
+	if($myTable === 'nids_oiseaux_cour'){
+		$query1=db_select($myTable,'u')
+		->fields('u', array('oiseau_espece'))
+		->distinct()
+		->execute();
+		$numRows = $query1->rowCount();
+	}
+	elseif($myTable === 'nids_nichoirs_obs' && $all === true){
+		$query2 = db_select('nids_nichoirs_obs', 'n')
+		->fields('n',array('nid_id', 'type_obs'))
+		->distinct(1);
+		
+		$db_or = db_or();
+		$db_or->condition('type_obs', '9' , '<');
+		$db_or->condition('type_obs', '' , '<>');
+		$rc= $query2->condition($db_or)
+			->execute();
+		$numRows = $rc->rowCount();
+	}
+	else{
+		$query1=db_select($myTable,'u')
+		->fields('u')
+		->execute();
+		$numRows = $query1->rowCount();
+	}
+	return $numRows;
+}
 
 ?>
