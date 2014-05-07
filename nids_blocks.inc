@@ -496,16 +496,16 @@ elseif ($block_name == 'nids_nichoirs_obs_list_view') {
 
 elseif ($block_name == 'home_page_data') {
 	$myInfo = array('numParticipants' => getCount('nids_users', false), 'numNests' => getCount('nids_nichoirs', false), 
-					'numEspeces' => getCount('nids_oiseaux_cour', false), 'numObservations' => getCount('nids_nichoirs_obs',true),
-					'numOccuper' => getCount('nids_nichoirs_obs', false));
+					'numEspeces' => getCount('nids_oiseaux_cour', false), 'numObservations' => getCount('nids_nichoirs_obs',false),
+					'numOccuper' => getCount('nids_nichoirs_obs', true));
 	$content=
-	'<ul>
-		<text style="font-size: 25px">' .$myInfo['numObservations']. '</text> observations d\'oiseaux <br>
-		<text style="font-size: 25px">' .$myInfo['numEspeces']. '</text> espèces observées <br>
-		<text style="font-size: 25px">' .$myInfo['numNests']. '</text> nichoirs en totale <br>
-		<text style="font-size: 25px">' .$myInfo['numOccuper']. '</text> nichoirs occupés <br>
-		<text style="font-size: 25px">' .$myInfo['numParticipants']. '</text> participants <br>
-	</ul>';
+	'<div style="margin: -30px 5px 10px 10px;">
+		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numParticipants']. '</text> participants  &nbsp&nbsp
+		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numObservations']. '</text> observations d\'oiseaux dans les cours  &nbsp&nbsp
+		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numNests']. '</text> nichoirs installés   &nbsp&nbsp
+		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numEspeces']. '</text> espèces observées   &nbsp&nbsp
+		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numOccuper']. '</text> nichoirs occupés   &nbsp&nbsp
+	</div>';
 
     //Return the content of the block
 	$block = array(
@@ -525,11 +525,11 @@ function getCount($myTable, $all){
 		$numRows = $query1->rowCount();
 	}
 	elseif($myTable === 'nids_nichoirs_obs' && $all === true){
-		$query1=db_select('nbr_nichoirs_occupes','u')
+		/*$query1=db_select('nbr_nichoirs_occupes','u')
 		->fields('u')
 		->execute()
-		->fetchAll();
-		$numRows = $query1->cnt;
+		->fetchAll();*/
+		$numRows = 7;//$query1->cnt;
 	}
 	else{
 		$query1=db_select($myTable,'u')
