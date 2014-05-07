@@ -209,7 +209,7 @@ function nids_menu() {
     'weight'          => 7,
     'access callback' => 'user_access',
     'type' => MENU_NORMAL_ITEM,
-    'page callback' => home_page_data,//'nids_list',
+    'page callback' => 'nids_list',
     );
 
   $items['explorer/mes_nichoirs'] = array(
