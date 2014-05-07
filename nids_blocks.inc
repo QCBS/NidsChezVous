@@ -524,12 +524,29 @@ function getCount($myTable, $all){
 		->execute();
 		$numRows = $query1->rowCount();
 	}
-	elseif($myTable === 'nids_nichoirs_obs4' && $all === true){
-		$query1=db_select('nbr_nichoirs_occupes','u')
+	elseif($myTable === 'nids_nichoirs_obs' && $all === true){
+		/*
+			SELECT count(b.obs_id) AS count
+				FROM ( SELECT max(nids_nichoirs_obs.obs_id) AS mid
+						FROM nids_nichoirs_obs
+						GROUP BY nids_nichoirs_obs.nid_id) a, nids_nichoirs_obs b
+			WHERE a.mid = b.obs_id AND NULLIF(b.type_obs::text, ''::text)::integer <= 8;
+					
+		*/
+		
+		$query1=db_query("SELECT count(b.obs_id) AS count
+						  FROM ( SELECT max(nids_nichoirs_obs.obs_id) AS mid
+								 FROM nids_nichoirs_obs
+								 GROUP BY nids_nichoirs_obs.nid_id) a, nids_nichoirs_obs b
+						  WHERE a.mid = b.obs_id AND NULLIF(b.type_obs::text, ''::text)::integer <= 8;")->fetchAll();
+		
+		/*$query1=db_select('nbr_nichoirs_occupes','u')
 		->fields('u')
 		->execute()
 		->fetchAll();
-		$numRows = $query1->cnt;
+		*/
+		debug($query1,'status');
+		$numRows = 4;
 	}
 	else{
 		$query1=db_select($myTable,'u')
