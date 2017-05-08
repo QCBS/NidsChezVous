@@ -11,7 +11,9 @@
         'width':'300px','list-style-type':'none','padding':'5px','margin':'5px'}
         );
       $('.ui-button-text').click(function(){
-         window.location = $(this).children("a").attr('href');
+         if ($(this).text().indexOf('Ajouter un marqueur')===false){
+          window.location = $(this).children("a").attr('href');
+         }
       })
     },
   }

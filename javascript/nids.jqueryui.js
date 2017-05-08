@@ -9,7 +9,7 @@
       $('#edit-submit').button();
       $('select').not($("[id^=edit-espece]")).selectBoxIt({theme:'jqueryui'});
       $('[id^=edit-espece]').click(function(){
-        $('option:selected',this).siblings().removeAttr("selected");
+      $('option:selected',this).siblings().removeAttr("selected");
       });
       $("#myList li").click(function() {
         $(this).addClass("selected").siblings().removeClass("selected");

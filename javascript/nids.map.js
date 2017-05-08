@@ -20,16 +20,16 @@
     },
 
     createMap: function() {
-      this.map_center = new google.maps.LatLng(48.43,-68.53);
+      this.map_center = new google.maps.LatLng(48.1,-68.85);
       this.map = new google.maps.Map($("#map")[0], {
-        zoom: 11,
+        zoom: 8,
         center: this.map_center,
         mapTypeId: google.maps.MapTypeId.HYBRID,
         disableDoubleClickZoom: true,
         streetViewControl: false,
       });
       this.marker_icon = {
-        url: Drupal.settings.nids_path + '/images/marqueur_non_occupe.png',
+        url: Drupal.settings.nids_path + '/images/marqueur_non_occupe_s.png',
         origin: new google.maps.Point(0,0)
       };
       this.polygon_icon = {
@@ -251,12 +251,12 @@
       //self.clearOverlays();
       if(utilise==1){
         marker_icon = {
-        url: Drupal.settings.nids_path + '/images/marqueur_occupe.png',
+        url: Drupal.settings.nids_path + '/images/marqueur_occupe_s.png',
         origin: new google.maps.Point(0,0)
         }
       }else{
         marker_icon = {
-        url: Drupal.settings.nids_path + '/images/marqueur_non_occupe.png',
+        url: Drupal.settings.nids_path + '/images/marqueur_non_occupe_s.png',
         origin: new google.maps.Point(0,0)
         }
       }
@@ -308,6 +308,7 @@
     },
 
     addCoordinates: function() {
+      this.clearOverlays();
       var self = this,
           coordinate_list = $('#inputcoords'),
           coordinate_error = $('#coorderror').hide();
@@ -323,6 +324,7 @@
               coordinate_error.append("<span>"+key+"</span>").show();
             } else {
               self.addMarker(self.createPoint(value.converted.reverse()));
+              self.map.setCenter({lat: Number(value.converted[1]), lng: Number(value.converted[0])})
             }
           });
           coordinate_list.val("");

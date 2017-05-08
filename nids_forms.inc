@@ -4,7 +4,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
   if($form_id == 'nichoir_node_form') {
     drupal_add_js(array('nids_mode' => 'edit'), 'setting');
 
-    $form['dncv'] = array(
+    /*$form['dncv'] = array(
       '#title' => t("Est-ce un nichoir construit par Des nids chez vous?"),
       '#type' => 'select',
       '#required' => TRUE,
@@ -13,7 +13,35 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
         1 => 'Oui',
         0 => 'Non',
         ),
+      );*/
+
+    $form['type_nichoir'] = array(
+      '#title' => t("Ce nichoir a été construit par..."),
+      '#type' => 'select',
+      '#required' => TRUE,
+      '#default_value' => isset($form['#node']->type_nichoir) ? $form['#node']->type_nichoir : "",
+      '#options' => array(
+        'DNCV' => 'Des Nids chez Vous',
+        'Nichoirs et compagnie' => 'Nichoirs et compagnie',
+        'Terre-eau' => 'Terre-Eau',
+        'Participant' => 'Moi-même',
+        'Autre' => 'Autre',
+        ),
       );
+
+    $form['type_nichoir_autre'] = array(
+      '#title' => t("Précisez le fabricant du nichoir..."),
+      '#type' => 'textfield',
+      '#size' => 35,
+      '#required' => FALSE,
+      '#default_value' => isset($form['#node']->type_nichoir_autre) ? $form['#node']->type_nichoir_autre : "",
+      '#states' => array(
+        'visible' => array(
+          ':input[name="type_nichoir"]' => array('value' => "Autre")
+          ),
+        ),
+      );
+
 
     $form['numero'] = array(
       '#title' => t("Quel est le numéro du nichoir?"),
@@ -23,7 +51,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => isset($form['#node']->dncv_no) ? $form['#node']->dncv_no : "",
       '#states' => array(
         'visible' => array(
-          ':input[name="dncv"]' => array('value' => "1")
+          ':input[name="type_nichoir"]' => array(array('value' => "DNCV"),array('value' => "Nichoirs et compagnie"),array('value' => "Terre-eau"),array('value' => "Autre"))
           ),
         ),
       );
@@ -36,7 +64,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
       '#default_value' => isset($form['#node']->nom_nichoir) ? $form['#node']->nom_nichoir : "",
       '#states' => array(
         'visible' => array(
-          ':input[name="dncv"]' => array('value' => "0")
+          ':input[name="type_nichoir"]' => array(array('value' => "Participant"),array('value' => "Autre"))
           ),
         ),
       );
@@ -83,6 +111,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
         'Parc Mont-Saint-Louis' => 'Parc Mont-Saint Louis',
         'Parc Mairie Saint-Anaclet' => 'Parc Mairie Saint-Anaclet',
         'Bibliothèque Lisette-Morin' =>'Bibliothèque Lisette-Morin',
+        'Parc Lepage' =>'Parc Lepage',
         ),
       '#required' => FALSE,
       '#states' => array(
@@ -97,14 +126,26 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
     $form['ecole'] = array(
       '#title' => t("Nom de l'école"),
       '#type' => 'select',
-      '#options' => array(
-        null => 'Choisir...',
-        'École Rose des Vents' => 'École Rose des Vents',
-        'École des Sources' => 'École des Sources',
-        'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
-        'École Mont Saint-Louis' => 'École Mont Saint-Louis',
-        'École Saint-Rosaire' => 'École Saint-Rosaire',
-        ),
+    '#options' => array(
+      null => 'Choisir...',
+      'École Rose des Vents' => 'École Rose des Vents',
+      'École des Sources' => 'École des Sources',
+      'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
+      'École Mont Saint-Louis' => 'École Mont Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École Boijoli' => 'École Boijoli',
+      'École de l\'Estran' => 'École de l\'Estran',
+      'École de Baluchon' => 'École de Baluchon',
+      'École des Bois-et-Marées' => 'École des Bois-et-Marées',
+      'École Lévesque' => 'École Lévesque',
+      'École du Grand-Pavois–de Sainte-Agnès' => 'École du Grand-Pavois–de Sainte-Agnès',
+      'École du Grand-Pavois–de Saint-Yves' => 'École du Grand-Pavois–de Saint-Yves',
+      'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École à la maison'=> 'École à la maison',
+      ),
       '#required' => FALSE,
       '#states' => array(
         'visible' => array(
@@ -161,12 +202,11 @@ if (isset($form['#node']->uid)){
       '#size' => 200,
       '#required' => FALSE,
       '#default_value' => isset($form['#node']->geography) ? $form['#node']->geography : "",
-      /*'#suffix' => '<h3>'.t('<strong>ou</strong>, si vous les connaissez, ajouter les coordonnées géographiques du nichoir en format latitude, longitude dans cette boîte (e.g. 48.3732, -68.7041).</h3>').'
+      '#suffix' => '<h3>'.t('<strong>ou</strong>, si vous les connaissez, ajouter les coordonnées géographiques du nichoir en format latitude, longitude dans cette boîte (e.g. 48.3732, -68.7041).</h3>').'
       <br><input type="text" id="inputcoords" style="display:inline;width:200px;">
       <button type="button" id="inputcoordsbut" class="nids-button" style="display:inline;" >'.t('Ajouter un marqueur à ces coordonnées sur la carte').'</button>
       <div id="coorderror" style="display:none;">'.t('Coordonnées non reconnues!').'</div>
     </p>',
-    */
     '#prefix' => '<h3>'.t('Situe le nichoir en déplacant le marqueur (icône de nichoir orange) sur la carte').'</h3><div id="map" style="width:700px;height:500px;"></div></div>',
     
     /*<p><button type="button" id="pointbut">'.t('Ajoute un nichoir en cliquant sur la carte').'</button>
@@ -283,6 +323,18 @@ else if($form_id == 'user_register_form' | $form_id == 'user_profile_form'){
       'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
       'École Mont Saint-Louis' => 'École Mont Saint-Louis',
       'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École Boijoli' => 'École Boijoli',
+      'École de l\'Estran' => 'École de l\'Estran',
+      'École de Baluchon' => 'École de Baluchon',
+      'École des Bois-et-Marées' => 'École des Bois-et-Marées',
+      'École Lévesque' => 'École Lévesque',
+      'École du Grand-Pavois–de Sainte-Agnès' => 'École du Grand-Pavois–de Sainte-Agnès',
+      'École du Grand-Pavois–de Saint-Yves' => 'École du Grand-Pavois–de Saint-Yves',
+      'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École à la maison'=> 'École à la maison',
       ),
     '#required' => FALSE,
     '#default_value' => isset($form_state['user']->ecole) ? $form_state['user']->ecole : "",
@@ -397,13 +449,29 @@ function nids_obsnichoir_form($form, &$form_state) {
 	global $user;
   	$path=drupal_get_path_alias(current_path());
   	$myObs = array();
-	if(isset($_GET['id']))
+	if(isset($_GET['id'])){
   		$obsEdit = $_GET['id'];
+    }
+
+    $user_role=db_select('users_roles','r')
+    ->fields('r',array('rid'))
+    ->condition('uid', $user->uid,'=')
+    ->execute()
+    ->fetchField();
+
+    $isscientist=($user_role==3 || $user_role==6);
+    $form['scientist'] = array(
+      '#type' => 'hidden',
+    //'#default_value' => $user_role,
+      '#default_value' => ($isscientist?1:0),
+      );
+
+
+
   	if(isset($obsEdit)){
 		$query = db_select('nids_nichoirs_obs', 'n');
 		$query->join('nids_nichoirs', 't', 'n.nid_id = t.nid');
-		$query->fields('n', array('obs_id', 'uid', 'nid_id', 'date_obs', 
-		'rien_vu', 'oiseau_espece', 'oiseau_espece_autre', 'type_obs', 'type_obs_autre'))
+		$query->fields('n')
 		->fields('t', array('dncv_no', 'nom_nichoir'))
 		->condition('n.obs_id', $obsEdit, '=');
 		$result = $query->execute();
@@ -420,13 +488,16 @@ function nids_obsnichoir_form($form, &$form_state) {
 			$myObs['oiseau_espece_autre'] = $record->oiseau_espece_autre;
 			$myObs['type_obs'] = $record->type_obs;
 			$myObs['type_obs_autre'] = $record->type_obs_autre;
+      $myObs['nombre_oeufs'] = $record->nombre_oeufs;
+      $myObs['nombre_oisillons'] = $record->nombre_oisillons;
 			}
 		  $form['obs_id'] = array('#type' => 'hidden', '#default_value' => $obsEdit,);
 		  
 		$userid=$myObs['uid'];
 	}
-	else
+	else {
    	$userid=$user->uid;
+  }
 
   $form['user'] = array(
     '#type' => 'hidden',
@@ -448,6 +519,7 @@ function nids_obsnichoir_form($form, &$form_state) {
       'Parc Mont-Saint-Louis' => 'Mont-Saint Louis',
       'Parc Mairie Saint-Anaclet' => 'Mairie Saint-Anaclet',
       'Bibliothèque Lisette-Morin' =>'Bibliothèque Lisette-Morin',
+      'Parc Lepage' =>'Parc Lepage',
       ),
     '#required' => FALSE,
     '#states' => array(
@@ -475,6 +547,18 @@ function nids_obsnichoir_form($form, &$form_state) {
       'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
       'École Mont Saint-Louis' => 'École Mont Saint-Louis',
       'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École Boijoli' => 'École Boijoli',
+      'École de l\'Estran' => 'École de l\'Estran',
+      'École de Baluchon' => 'École de Baluchon',
+      'École des Bois-et-Marées' => 'École des Bois-et-Marées',
+      'École Lévesque' => 'École Lévesque',
+      'École du Grand-Pavois–de Sainte-Agnès' => 'École du Grand-Pavois–de Sainte-Agnès',
+      'École du Grand-Pavois–de Saint-Yves' => 'École du Grand-Pavois–de Saint-Yves',
+      'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École à la maison'=> 'École à la maison',
       ),
     '#required' => FALSE,
     '#states' => array(
@@ -515,11 +599,21 @@ function nids_obsnichoir_form($form, &$form_state) {
     }
   }
   else {
-    $nichoirs=db_select('nids_nichoirs','n')
-    ->fields('n')
-    ->condition('uid',$userid,'=')
-    ->execute();
+    if ($isscientist){
+      $nichoirs=db_select('nids_nichoirs','n')
+      ->fields('n')
+      ->orderBy('dncv_no', 'ASC')
+      ->execute();
+    }else {
+      $nichoirs=db_select('nids_nichoirs','n')
+      ->fields('n')
+      ->condition('uid',$userid,'=')
+      ->execute();
+      }
   }
+
+
+
   if ($nichoirs->rowCount()>0){
     for ($i=1;$i<=$nichoirs->rowCount();$i++) {
       $nic=$nichoirs->fetchAssoc();
@@ -634,6 +728,34 @@ function nids_obsnichoir_form($form, &$form_state) {
     '#default_value' => isset($obsEdit) && !$myObs['rien_vu'] && isset($myObs['type_obs'])? $myObs['type_obs_autre'] : '',
     );
 
+  $form['nombre_oeufs'] = array(
+    '#title' => t("Nombre d'oeufs dans le nid (si observé)?"),
+    '#type' => 'textfield',
+    '#size' => 50,
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        //':input[name="esp"]' => array('!value' => 'Choisir'),
+        ':input[name="type_obs"]' => array('value' => "7"),
+        ),
+      ),
+       '#default_value' => isset($myObs['nombre_oeufs'])? $myObs['nombre_oeufs'] : '',
+    );
+
+    $form['nombre_oisillons'] = array(
+    '#title' => t("Nombre d'oisillons (si observé)?"),
+    '#type' => 'textfield',
+    '#size' => 50,
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        //':input[name="esp"]' => array('!value' => 'Choisir'),
+        ':input[name="type_obs"]' => array('value' => "8"),
+        ),
+      ),
+       '#default_value' => isset($myObs['nombre_oisillons'])? $myObs['nombre_oisillons'] : '',
+    );
+
 $form['submit'] = array(
   '#type' => 'submit',
   '#value' => t("Ajouter l'observation!"),
@@ -714,6 +836,18 @@ function nids_obscour_form($form, &$form_state) {
       'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
       'École Mont Saint-Louis' => 'École Mont Saint-Louis',
       'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École Boijoli' => 'École Boijoli',
+      'École de l\'Estran' => 'École de l\'Estran',
+      'École de Baluchon' => 'École de Baluchon',
+      'École des Bois-et-Marées' => 'École des Bois-et-Marées',
+      'École Lévesque' => 'École Lévesque',
+      'École du Grand-Pavois–de Sainte-Agnès' => 'École du Grand-Pavois–de Sainte-Agnès',
+      'École du Grand-Pavois–de Saint-Yves' => 'École du Grand-Pavois–de Saint-Yves',
+      'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École à la maison'=> 'École à la maison',
       ),
     '#required' => FALSE,
     '#states' => array(
@@ -862,7 +996,8 @@ function nichoir_insert($node) {
   db_insert('nids_nichoirs')->fields(array(
    'nid' => $node->nid,    
     'uid' => $node->user,
-    'dncv' => $node->dncv,
+    'type_nichoir' => $node->type_nichoir,
+    'type_nichoir_autre' => $node->type_nichoir_autre,
     'dncv_no' => ($node->numero =='')?null:$node->numero,
     'ecole' => $node->ecole,
     'parc' => $node->parc,
@@ -881,18 +1016,20 @@ function nichoir_insert($node) {
 
 // Form submit handler.
 function nichoir_form_submit($form, &$form_state) {
-if ($form_state['values']['numero']==''){
-  $form_state['values']['title']=$form_state['values']['nom_nichoir'];
-}
-else{
-  $form_state['values']['title']=$form_state['values']['numero'];
-}
+    if ($form_state['values']['numero']==''){
+      $form_state['values']['title']=$form_state['values']['nom_nichoir'];
+    }
+    else{
+      $form_state['values']['title']=$form_state['values']['numero'];
+    }
 }
 
 // Form validation handler.
 function cour_form_validate($form, &$form_state) {
   //do validation here if necessary
-
+  if (!is_numeric($form_state['values']['duree_obs'])){
+    form_set_error('espece',t('Veuillez indiquer une durée d\'observation en minutes (exemple: 10)'));
+  }
 }
 
 // Form submit handler.
@@ -935,7 +1072,9 @@ function nids_obsnichoir_form_validate($form, &$form_state){
   if ($form_state['values']['espece_0']=='' && $form_state['values']['rien_vu']==0){
     form_set_error('espece',t('Veuillez choisir une espèce ou indiquer "je n\'ai rien vu"'));
   }
-
+  if ($form_state['values']['nichoir']==0){
+    form_set_error('nichoir',t('Veuillez spécifier un nichoir!'));
+  }
 }
 
 function nids_obsnichoir_form_submit($form, &$form_state){
@@ -958,6 +1097,8 @@ function nids_obsnichoir_form_submit($form, &$form_state){
           'type_obs_autre' => $form_state['values']['type_obs_autre'],
           'oiseau_espece' => $form_state['values']['espece_0'],
           'oiseau_espece_autre' => $form_state['values']['espece_autre'],
+          'nombre_oeufs' => $form_state['values']['nombre_oeufs'],
+          'nombre_oisillons' => $form_state['values']['nombre_oisillons'],
         );
         
   if(!$exists){
@@ -977,7 +1118,8 @@ function nichoir_update($node) {
     db_update('nids_nichoirs')->fields(array(
    'nid' => $node->nid,    
     'uid' => $node->user,
-    'dncv' => $node->dncv,
+    'type_nichoir' => $node->type_nichoir,
+    'type_nichoir_autre' => $node->type_nichoir_autre,
     'dncv_no' => ($node->numero =='')?null:$node->numero,
     'ecole' => ($node->ecole=='')?null:$node->ecole,
     'parc' => ($node->parc=='')?null:$node->parc,
@@ -1036,6 +1178,60 @@ function recursive_array_search($needle,$haystack) {
         }
     }
     return false;
+}
+
+function nids_graphs_sp_form($form,&$form_state){
+
+    $q=db_query("SELECT oiseau_espece FROM nids_oiseaux_cour WHERE oiseau_espece IS NOT NULL AND oiseau_espece != '' AND nombre_individus IS NOT NULL GROUP BY oiseau_espece HAVING count(*)>3 ORDER BY oiseau_espece ASC");
+
+    $options_especes=array(''=>'Choisir');
+    if ($q->rowCount()>0){
+      for ($i=1;$i<=$q->rowCount();$i++) {
+        $qq=$q->fetchAssoc();
+          $options_especes=$options_especes + array($qq['oiseau_espece']=>$qq['oiseau_espece']);
+       }
+    }
+
+    $form['espece'] = array(
+      '#title' => t("Quelle espèce?"),
+      '#type' => 'select',
+      '#options' => $options_especes,
+      '#required' => FALSE,
+      '#default_value' => "",
+    );
+
+    $form['type_graph'] = array(
+      '#title' => t(""),
+      '#type' => 'select',
+      '#options' => array(
+        "indiv"=>"Nombre d'individus",
+        "observations"=>"Nombre d'observations",
+        ),
+      '#required' => FALSE,
+      '#default_value' => "",
+    );
+
+    $form['annee'] = array(
+      '#title' => t("Année"),
+      '#type' => 'select',
+      '#options' => array(
+          2014=>'2014',
+          2015=>'2015',
+          2016=>'2016',
+        ),
+      '#required' => FALSE,
+      '#default_value' => "",
+      '#suffix' => "<div id='container_par_sp' style='width:900px;height:500px;padding-top:10px;'></div>"
+    );
+$module_path = base_path().drupal_get_path('module', 'nids');
+  $js_files = array(
+  'http://code.highcharts.com/highcharts.js',
+  'http://code.highcharts.com/modules/exporting.js',
+  //$module_path . '/javascript/date.js',  
+  $module_path . '/javascript/nids.charts_par_sp.js',    
+  );
+  $form['#attached']['js'] = $js_files;
+  return $form;
 }
 
 ?>

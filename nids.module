@@ -173,7 +173,31 @@ function nids_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     );
-    
+
+  $items['nids/charts_sp_frequentes_ajax'] = array(
+    'page callback' => 'charts_queries_sp_frequentes',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    );
+
+  $items['nids/charts_par_sp_ajax'] = array(
+    'page callback' => 'charts_queries_par_sp',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    );
+   
+  $items['nids/charts_diversite_ajax'] = array(
+    'page callback' => 'charts_queries_diversite',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    );
+
+  $items['nids/charts_ma_diversite_ajax'] = array(
+    'page callback' => 'charts_queries_ma_diversite',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    );
+
   $items['supprimer'] = array(
     'page callback' => 'myDelete',
     'access arguments' => array('access content'),
@@ -205,7 +229,7 @@ function nids_menu() {
     'title'           => t('Explorer'),
     'description'     => t('Explorer'),
     'menu_name'       => 'main-menu',
-    'access arguments' => array('create nichoir content'),
+    'access arguments' => array('access content'),
     'weight'          => 7,
     'access callback' => 'user_access',
     'type' => MENU_NORMAL_ITEM,
@@ -266,6 +290,59 @@ function nids_menu() {
     'type' => MENU_NORMAL_ITEM,
     'page callback' => 'nids_block_obs_oiseaux',
     );
+
+  $items['resultats'] = array(
+    'title'           => t('Résultats'),
+    'description'     => t('Résultats'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('access content'),
+    'weight'          => 7,
+    'access callback' => 'user_access',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'resultats_callback',
+    );
+
+  $items['resultats/especes_frequentes'] = array(
+    'title'=> t('Espèces les plus fréquentes'),
+    'page callback' => 'nids_charts_sp_frequentes',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    );
+
+   $items['resultats/par_espece'] = array(
+    'title'           => t('Observations par espèce'),
+    'description'     => t('Observations par espèce'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('access content'),
+    'weight'          => 6,
+    'access callback' => 'user_access',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'graphs_par_sp_callback',
+    );
+
+   $items['resultats/diversite'] = array(
+    'title'           => t('Diversité des espèces'),
+    'description'     => t('Diversité des espèces'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('access content'),
+    'weight'          => 6,
+    'access callback' => 'user_access',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'graphs_diversite_callback',
+    );
+
+   $items['resultats/mes_observations'] = array(
+    'title'           => t('Mes observations'),
+    'description'     => t('Mes observations'),
+    'menu_name'       => 'main-menu',
+    'access arguments' => array('create nichoir content'),
+    'weight'          => 6,
+    'access callback' => 'user_access',
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'graphs_ma_diversite_callback',
+    );
+
+
     //nids_oiseaux_cour_list
   return $items;
 }
@@ -367,6 +444,9 @@ function nids_user_registration_validate($form, &$form_state){
   if (strpos($form_state['values']['valider'],'vous')===false){
     form_set_error('valider', t('Veuillez fournir la bonne réponse à la question de vérification!'));
   }
+  if (is_numeric($form_state['values']['mangeoires_nombre'])===false && $form_state['values']['mangeoires_nombre']!=''){
+    form_set_error('mangeoires_nombre', t('Veuillez spécifier un nombre entier de mangeoires!'));
+  }
 }
 
 
@@ -452,7 +532,8 @@ function nichoir_load($nodes) {
 			->fetchAll();
 			foreach ($result as $record){
 				$nodes[key($nodes)]->uid = $record->uid;
-				$nodes[key($nodes)]->dncv = $record->dncv;
+				$nodes[key($nodes)]->type_nichoir = $record->type_nichoir;
+        $nodes[key($nodes)]->type_nichoir_autre = $record->type_nichoir_autre;
 				$nodes[key($nodes)]->dncv_no = $record->dncv_no;
 			
 				if ($record->parc!='')
@@ -482,7 +563,8 @@ function nichoir_load($nodes) {
 		->fetchAll();
 		foreach ($result as $record){
 			$nodes[key($nodes)]->uid = $user->uid;
-			$nodes[key($nodes)]->dncv = $record->dncv;
+			$nodes[key($nodes)]->type_nichoir = $record->type_nichoir;
+      $nodes[key($nodes)]->type_nichoir_autre = $record->type_nichoir_autre;
 			$nodes[key($nodes)]->dncv_no = $record->dncv_no;
 			
 			if ($record->parc!='')
@@ -519,14 +601,14 @@ function myText($id, $type){
   	<h1>Effacer l\'observation?</h1> 
 	<li class="first leaf ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="width: 300px; list-style-type: none; padding: 5px; margin: 5px;">
 		<span class="ui-button-text">
-        <a href='.url('supprimer/Oui', $options).'></a>
+        <a href='.url('supprimer/Oui', $options).'>
             Oui
         </a>
     	</span>
 	</li>
 	<li class="last leaf ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" style="width: 300px; list-style-type: none; padding: 5px; margin: 5px;">
    	<span class="ui-button-text">
-        <a href='.url('supprimer/Non', $options).'></a>
+        <a href='.url('supprimer/Non', $options).'>
             Non
         </a>
    	</span>
@@ -567,6 +649,87 @@ function nichoir_callback(){
   return drupal_get_form('nids_obsnichoir_form');//$block['content'];
 }
 
+
+function graphs_par_sp_callback(){
+  //$block = module_invoke('nids', 'block_view', 'form_nichoir');
+  return drupal_get_form('nids_graphs_sp_form');//$block['content'];
+}
+
+function graphs_diversite_callback(){
+  $module_path = base_path().drupal_get_path('module', 'nids');
+  drupal_add_js($module_path . '/javascript/nids.charts_diversite.js');
+  drupal_add_js('http://code.highcharts.com/highcharts.js');
+  drupal_add_js('http://code.highcharts.com/modules/exporting.js');
+  $content="<div id='container' style='width:900px;height:500px;'></div>";
+  return $content;
+}
+
+function graphs_ma_diversite_callback(){
+  $module_path = base_path().drupal_get_path('module', 'nids');
+  drupal_add_js($module_path . '/javascript/nids.charts_ma_diversite.js');
+  drupal_add_js('http://code.highcharts.com/highcharts.js');
+  drupal_add_js('http://code.highcharts.com/modules/exporting.js');
+  $content="<div id='container_especes' style='width:900px;height:500px;'></div><div id='container_heures' style='width:900px;height:500px;'></div>";
+  return $content;
+}
+
+function nids_charts_sp_frequentes(){
+  drupal_add_js("http://code.highcharts.com/highcharts.js");
+  drupal_add_js("http://code.highcharts.com/modules/exporting.js");
+  drupal_add_js(base_path().drupal_get_path('module', 'nids') . '/javascript/nids.charts_sp_frequentes.js');
+  $content="<div id='container_nbre_obs_bar' style='width:900px;height:500px;padding-bottom:30px;'></div><div id='container_nbre_indiv_bar' style='width:900px;height:500px;padding-bottom:30px;'></div><div id='container_nbre_indiv' style='width:900px;height:500px;padding-bottom:30px'></div><br><br><div id='container_nbre_espece' style='width:900px;height:500px;padding-bottom:30px;'></div>";
+  return $content;
+}
+
+function maps_diversite_callback(){
+  drupal_add_js('http://maps.google.com/maps/api/js?sensor=false');
+  drupal_add_js(base_path().drupal_get_path('module', 'nids') . '/javascript/nids.heatmap.js');
+  drupal_add_js(array('nids_mode' => 'view'), 'setting');
+  $result = $query->execute();
+  $output='';
+  $geogi=array();
+  $geogu=array();
+  foreach($result as $n){
+    $nob = db_select('SELECT count(DISTINCT ')->execute()->fetchAssoc();
+    if($nob['type_obs'] >= 9 || $nob['type_obs']==''){
+      $ut=0; //Non Utilisé
+      $sp='';
+    }else{
+      $ut=1; //Utilisé!
+      //$sp='';
+      $sp=htmlentities($nob['oiseau_espece'],ENT_QUOTES);
+    }
+    $iw="<div><h2><b>".(($n->dncv_no!='')?'DNCV#'.$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc.'<br>':'').(($n->ecole!='')?$n->ecole.'<br>':'')."Date d&#39;installation: ".$n->date_installation."</div></div><br>";
+    if($ut==1){
+      $iw.='<b>Utilisé!<br>'.$sp.'<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:20px;height:20px"></b>';
+    }
+    $geo=json_decode($n->geography);
+    $geo->features[0]->properties=array(
+      'nid'=>$n->nid,
+      'infowin'=>$iw,
+      'utilise'=>$ut,
+      );
+    if($ut==1){ //put used at end
+      $geogu[]=$geo->features[0];
+    }else{
+      $geogi[]=$geo->features[0];
+    }
+    //$output.=""
+  }
+  $geog=array_merge($geogi,$geogu);  
+  $arr=array(
+    'type'=>'FeatureCollection',
+    'features' => $geog,
+    );
+  $output.="<input type='hidden' name='geography' value='".json_encode($arr,JSON_UNESCAPED_SLASHES)."'>";
+  $output.='<div id="map" style="width:100%;height:'.$height.'px;max-width: none;max-height:85%;"></div><br><br>';
+  return $output;
+  return $content;
+}
+
+function resultats_callback(){
+
+}
 
 function cour_callback(){
   return drupal_get_form('nids_obscour_form');

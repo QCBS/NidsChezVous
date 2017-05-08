@@ -244,6 +244,10 @@ function _observation_oiseaux_pic($select) {
           'url'=>'http://fr.wikipedia.org/wiki/Canard_pilet',
           'pic'=>'http://media.eol.org/content/2013/02/01/17/77692_orig.jpg'),
 
+        array('espece'=>'Cardinal à poitrine rose',
+          'url'=>'https://fr.wikipedia.org/wiki/Cardinal_%C3%A0_poitrine_rose',
+          'pic'=>'https://upload.wikimedia.org/wikipedia/commons/6/60/Rose-breasted_grosbeak.jpg'),
+
         array('espece'=>'Chevalier grivelé',
           'url'=>'http://fr.wikipedia.org/wiki/Chevalier_grivel%C3%A9',
           'pic'=>'http://media.eol.org/content/2012/06/13/22/34953_orig.jpg'),
@@ -251,6 +255,10 @@ function _observation_oiseaux_pic($select) {
         array('espece'=>'Chevalier solitaire',
           'url'=>'http://fr.wikipedia.org/wiki/Chevalier_solitaire',
           'pic'=>'http://media.eol.org/content/2012/09/04/04/18642_orig.jpg'),
+
+        array('espece'=>'Chouette rayée',
+          'url'=>'https://fr.wikipedia.org/wiki/Chouette_ray%C3%A9e',
+          'pic'=>'http://media.eol.org/content/2016/01/22/10/42962_orig.jpg'),
 
         array('espece'=>'Cormorant à aigrette',
           'url'=>'http://fr.wikipedia.org/wiki/Cormoran_%C3%A0_aigrettes',
@@ -331,6 +339,10 @@ function _observation_oiseaux_pic($select) {
         array('espece'=>'Goéland marin',
           'url'=>'http://fr.wikipedia.org/wiki/Go%C3%A9land_marin',
           'pic'=>'http://media.eol.org/content/2012/06/13/13/55382_orig.jpg'),
+
+        array('espece'=>'Goglu des prés',
+          'url'=>'http://fr.wikipedia.org/wiki/Goglu_des_pr%C3%A9s',
+          'pic'=>'http://media.eol.org/content/2012/06/13/22/00354_orig.jpg'),
 
         array('espece'=>'Grand Chevalier',
           'url'=>'http://fr.wikipedia.org/wiki/Grand_Chevalier',
@@ -428,6 +440,10 @@ function _observation_oiseaux_pic($select) {
          'url'=>'http://fr.wikipedia.org/wiki/Moqueur_chat', 
          'pic'=>'http://media.eol.org/content/2013/11/16/21/13539_orig.jpg'),
 
+        array('espece'=>'Moqueur roux', 
+         'url'=>'http://fr.wikipedia.org/wiki/Moqueur_roux', 
+         'pic'=>'http://media.eol.org/content/2012/06/14/23/90633_orig.jpg'),
+
         array('espece'=>'Moucherolle tchébec', 
          'url'=>'http://fr.wikipedia.org/wiki/Moucherolle_tch%C3%A9bec', 
          'pic'=>'http://media.eol.org/content/2013/12/07/05/88891_orig.jpg'),
@@ -447,6 +463,14 @@ function _observation_oiseaux_pic($select) {
         array('espece'=>'Paruline à collier', 
          'url'=>'http://fr.wikipedia.org/wiki/Paruline_%C3%A0_collier', 
          'pic'=>'http://media.eol.org/content/2013/07/02/04/81786_orig.jpg'),
+
+        array('espece'=>'Paruline à flanc marron', 
+         'url'=>'http://fr.wikipedia.org/wiki/Paruline_%C3%A0_flancs_marron', 
+         'pic'=>'http://media.eol.org/content/2012/06/13/22/49288_orig.jpg'),
+
+        array('espece'=>'Paruline à joues grises', 
+         'url'=>'http://fr.wikipedia.org/wiki/Paruline_%C3%A0_joues_grises', 
+         'pic'=>'http://media.eol.org/content/2011/11/01/14/26673_orig.jpg'),
 
         array('espece'=>'Paruline à gorge noire', 
          'url'=>'http://fr.wikipedia.org/wiki/Paruline_%C3%A0_gorge_noire', 
@@ -604,6 +628,10 @@ function _observation_oiseaux_pic($select) {
          'url'=>'http://fr.wikipedia.org/wiki/Troglodyte_familier', 
          'pic'=>'http://media.eol.org/content/2013/10/26/03/10827_orig.jpg'),
 
+        array('espece'=>'Tyran tritri', 
+         'url'=>'http://fr.wikipedia.org/wiki/Tyran_tritri', 
+         'pic'=>'http://media.eol.org/content/2012/06/13/22/90940_orig.jpg'),
+
         array('espece'=>'Urubu à tête rouge', 
          'url'=>'http://fr.wikipedia.org/wiki/Urubu_%C3%A0_t%C3%AAte_rouge', 
          'pic'=>'http://media.eol.org/content/2009/09/15/18/83681_orig.jpg'),
@@ -690,7 +718,11 @@ function nids_map($width,$height){
   $geogi=array();
   $geogu=array();
   foreach($result as $n){
-    $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs','oiseau_espece'))->condition('nid_id',$n->nid,'=')->orderBy('obs_id', 'DESC')->execute()->fetchAssoc();
+    if(1){  //BASED ON LAST OBSERVATIION RE-ENABLE IN 2015!!
+        $nob = db_select('nids_nichoirs_obs', 'n')->fields('n',array('type_obs','oiseau_espece'))->condition('nid_id',$n->nid,'=')->condition('date_obs','2016-01-01','>')->orderBy('obs_id', 'DESC')->execute()->fetchAssoc();
+    }else{
+        $nob = db_query('SELECT min(n.type_obs) as type_obs FROM nids_nichoirs_obs n WHERE n.nid_id=:nid',array(':nid' => $n->nid))->fetchAssoc();
+    }
     if($nob['type_obs'] >= 9 || $nob['type_obs']==''){
       $ut=0; //Non Utilisé
       $sp='';
@@ -797,5 +829,98 @@ function _check_coordinate($coord) {
     return $output;
 }
 
+function charts_queries_sp_frequentes(){
+
+  if($_POST['chart']=='indiv'){
+    $q=db_query("SELECT oiseau_espece, date_trunc('week', date_obs::date) AS semaine, sum(nombre_individus) as nbre FROM nids_oiseaux_cour WHERE oiseau_espece IN(SELECT oiseau_espece FROM nids_oiseaux_cour WHERE oiseau_espece IS NOT NULL AND oiseau_espece != '' AND nombre_individus IS NOT NULL  AND extract(YEAR from date_obs::date)=date_part('year', now())  GROUP BY oiseau_espece ORDER BY sum(nombre_individus) DESC LIMIT 10) AND extract(YEAR from date_obs::date)=date_part('year', now()) GROUP BY semaine, oiseau_espece ORDER BY oiseau_espece")->fetchAll();
+  }else if ($_POST['chart']=='obs'){
+    $q=db_query("SELECT oiseau_espece, date_trunc('week', date_obs::date) AS semaine, count(*) as nbre FROM nids_oiseaux_cour WHERE oiseau_espece IN(SELECT oiseau_espece FROM nids_oiseaux_cour WHERE oiseau_espece IS NOT NULL AND oiseau_espece != '' AND extract(YEAR from date_obs::date)=date_part('year', now()) GROUP BY oiseau_espece ORDER BY count(*) DESC LIMIT 10) AND extract(YEAR from date_obs::date)=date_part('year', now()) GROUP BY semaine, oiseau_espece ORDER BY oiseau_espece")->fetchAll();
+  }else if ($_POST['chart']=='bar_freq'){
+    $q=db_query("SELECT oiseau_espece, count(*) as nbre FROM nids_oiseaux_cour WHERE oiseau_espece IN(SELECT oiseau_espece FROM nids_oiseaux_cour WHERE oiseau_espece IS NOT NULL AND oiseau_espece != '' AND nombre_individus IS NOT NULL GROUP BY oiseau_espece ORDER BY sum(nombre_individus) DESC LIMIT 10) GROUP BY oiseau_espece ORDER BY nbre DESC")->fetchAll();    
+  }else{
+    $q=db_query("SELECT oiseau_espece, sum(nombre_individus) as nbre FROM nids_oiseaux_cour WHERE oiseau_espece IN(SELECT oiseau_espece FROM nids_oiseaux_cour WHERE oiseau_espece IS NOT NULL AND oiseau_espece != '' AND nombre_individus IS NOT NULL GROUP BY oiseau_espece ORDER BY sum(nombre_individus) DESC LIMIT 10) GROUP BY oiseau_espece ORDER BY nbre DESC")->fetchAll();   
+  }
+  $result = array();
+ 
+ if($_POST['chart']=='indiv' || $_POST['chart']=='obs'){
+    $oe='';
+    foreach($q as $s) {
+      if($s->nbre != NULL){
+        if($s->oiseau_espece!=$oe) {
+            $result[]['name'] = $s->oiseau_espece;
+            end($result);
+            $key = key($result);
+        }
+        $result[$key]['data'][] = array($s->semaine,$s->nbre);
+        $oe=$s->oiseau_espece;
+      }
+    }
+  }else{
+      $result=$q;
+  }
+  drupal_json_output($result);
+}
+
+function charts_queries_diversite(){
+  $q=db_query("SELECT date_trunc('week', date_obs::date) AS semaine, count(DISTINCT oiseau_espece) as nbre FROM nids_oiseaux_cour GROUP BY semaine ORDER BY semaine")->fetchAll();
+  $result = array();
+  $result[0]['name'] = 'Nombre d\'espèces';
+  foreach($q as $s) {
+    $result[0]['data'][] = array($s->semaine,$s->nbre);
+  }
+
+  $q=db_query("SELECT date_trunc('week', date_obs::date) AS semaine, count(DISTINCT uid) as nbre FROM nids_oiseaux_cour GROUP BY semaine ORDER BY semaine")->fetchAll();
+  $result[1]['name'] = 'Nombre de participants';
+  foreach($q as $s) {
+    $result[1]['data'][] = array($s->semaine,$s->nbre);
+  }
+  drupal_json_output($result);
+}
+
+
+function charts_queries_ma_diversite(){
+  global $user;
+  $uid=$user->uid;
+  //$uid=74;
+if($_POST['graph']=="especes"){
+  $q=db_query("SELECT date_trunc('week', date_obs::date) AS semaine, count(DISTINCT oiseau_espece) as nbre FROM nids_oiseaux_cour WHERE uid=$uid GROUP BY semaine ORDER BY semaine")->fetchAll();
+  $result = array();
+  $result[0]['name'] = 'Nombre d\'espèces';
+  foreach($q as $s) {
+    $result[0]['data'][] = array($s->semaine,$s->nbre);
+  }
+}else{
+  $q=db_query("SELECT date_trunc('week', a.date_obs::date) as semaine, sum(a.duree_obs) as nbre FROM (SELECT DISTINCT date_obs, duree_obs FROM nids_oiseaux_cour WHERE uid=$uid) a GROUP BY semaine ORDER BY semaine")->fetchAll();
+  $result[0]['name'] = 'Nombre d\'heures';
+  foreach($q as $s) {
+    $result[0]['data'][] = array($s->semaine,$s->nbre);
+  }
+}
+  drupal_json_output($result);
+}
+
+function charts_queries_par_sp(){
+
+$sp=pg_escape_string($_POST['espece']);
+$an=$_POST['annee'];
+if($_POST['type_graph']=='indiv'){
+  $q=db_query("SELECT oiseau_espece, date_trunc('week', date_obs::date)::date AS semaine, sum(nombre_individus) as nbre FROM nids_oiseaux_cour WHERE oiseau_espece='$sp' AND extract(YEAR from date_obs::date)=".$an." GROUP BY oiseau_espece,semaine ORDER BY semaine")->fetchAll();
+}else{
+  $q=db_query("SELECT oiseau_espece, date_trunc('week', date_obs::date)::date AS semaine, count(*) as nbre FROM nids_oiseaux_cour WHERE oiseau_espece='$sp' AND extract(YEAR from date_obs::date)=".$an." GROUP BY oiseau_espece,semaine ORDER BY semaine")->fetchAll();
+}
+  $result = array();
+  $oe='';
+  foreach($q as $s) {
+    if($s->oiseau_espece!=$oe) {
+        $result[]['name'] = $s->oiseau_espece;
+        end($result);
+        $key = key($result);
+    }
+    $result[$key]['data'][] = array($s->semaine,$s->nbre);
+    $oe=$s->oiseau_espece;
+  }
+  drupal_json_output($result);
+}
 
 ?>
+
