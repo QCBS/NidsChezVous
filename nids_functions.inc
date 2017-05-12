@@ -712,7 +712,7 @@ function nids_map($width,$height){
   drupal_add_js(base_path().drupal_get_path('module', 'nids') . '/javascript/nids.map.js');
   drupal_add_js(array('nids_mode' => 'view'), 'setting');
   $query = db_select('nids_nichoirs', 'n')->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
-    'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 'habitat', 'hauteur', 'orientation'));
+    'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 'habitat', 'hauteur', 'orientation','type_nichoir'));
   $result = $query->execute();
   $output='';
   $geogi=array();
@@ -731,7 +731,7 @@ function nids_map($width,$height){
       //$sp='';
       $sp=htmlentities($nob['oiseau_espece'],ENT_QUOTES);
     }
-    $iw="<div><h2><b>".(($n->dncv_no!='')?'DNCV#'.$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc.'<br>':'').(($n->ecole!='')?$n->ecole.'<br>':'')."Date d&#39;installation: ".$n->date_installation."</div></div><br>";
+    $iw="<div><h2><b>".(($n->dncv_no!='')?$n->type_nichoir.'#'.$n->dncv_no:$n->nom_nichoir)."</b></h2><div>".(($n->parc!='')?$n->parc.'<br>':'').(($n->ecole!='')?$n->ecole.'<br>':'')."Date d&#39;installation: ".$n->date_installation."</div></div><br>";
     if($ut==1){
       $iw.='<b>Utilisé!<br>'.$sp.'<img src="'.base_path().drupal_get_path('module','nids').'/images/green-check-mark.png" style="width:20px;height:20px"></b>';
     }

@@ -151,7 +151,7 @@ function nids_block_view($block_name = '') {
 		$query->join('nids_users', 'u', 'n.uid = u.uid');
 		$query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
 			'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
-			'habitat', 'hauteur', 'orientation', 'trou'))
+			'habitat', 'hauteur', 'orientation', 'trou','type_nichoir'))
 		->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header)
 		->limit(100);
 
@@ -179,7 +179,7 @@ function nids_block_view($block_name = '') {
 			else
 				$parcecole='Cours';
 
-			$nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : 'DNCV #'.$node1->dncv_no;
+			$nomnumero = ($node1->type_nichoir=='Participant') ? $node1->nom_nichoir : $node1->type_nichoir.' #'.$node1->dncv_no;
 			
 			$nob = db_select('nids_nichoirs_obs', 'n')
 			->fields('n',array('type_obs','oiseau_espece'))
@@ -220,7 +220,7 @@ elseif ($block_name == 'nids_list_own_nichoirs') {
 	$query = db_select('nids_nichoirs', 'n')->extend('PagerDefault');
 	$query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
 		'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
-		'habitat', 'hauteur', 'orientation', 'trou'))->condition('uid',$user->uid,'=')
+		'habitat', 'hauteur', 'orientation', 'trou','type_nichoir'))->condition('uid',$user->uid,'=')
 		->limit(100);
 	$result = $query->execute();
 	$geog=array();
@@ -240,7 +240,7 @@ elseif ($block_name == 'nids_list_own_nichoirs') {
 		else
 			$parcecole='Cours';
 
-		$nomnumero = ($node1->dncv==0) ? $node1->nom_nichoir : 'DNCV #'.$node1->dncv_no;
+		$nomnumero = ($node1->type_nichoir=='Participant') ? $node1->nom_nichoir : $node1->type_nichoir.'#'.$node1->dncv_no;
 		$nob = db_select('nids_nichoirs_obs', 'n')
 		->fields('n',array('type_obs'))
 		->condition('nid_id', $node1->nid,'=')

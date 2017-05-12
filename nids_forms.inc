@@ -126,26 +126,7 @@ function nids_form_alter(&$form, &$form_state, $form_id) {
     $form['ecole'] = array(
       '#title' => t("Nom de l'école"),
       '#type' => 'select',
-    '#options' => array(
-      null => 'Choisir...',
-      'École Rose des Vents' => 'École Rose des Vents',
-      'École des Sources' => 'École des Sources',
-      'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
-      'École Mont Saint-Louis' => 'École Mont Saint-Louis',
-      'École Saint-Rosaire' => 'École Saint-Rosaire',
-      'École Boijoli' => 'École Boijoli',
-      'École de l\'Estran' => 'École de l\'Estran',
-      'École de Baluchon' => 'École de Baluchon',
-      'École des Bois-et-Marées' => 'École des Bois-et-Marées',
-      'École Lévesque' => 'École Lévesque',
-      'École du Grand-Pavois–de Sainte-Agnès' => 'École du Grand-Pavois–de Sainte-Agnès',
-      'École du Grand-Pavois–de Saint-Yves' => 'École du Grand-Pavois–de Saint-Yves',
-      'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
-      'École Saint-Rosaire' => 'École Saint-Rosaire',
-      'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
-      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
-      'École à la maison'=> 'École à la maison',
-      ),
+    '#options' => nids_ecoles(),
       '#required' => FALSE,
       '#states' => array(
         'visible' => array(
@@ -540,26 +521,7 @@ function nids_obsnichoir_form($form, &$form_state) {
   $form['ecole'] = array(
     '#title' => t("Pour quelle école?"),
     '#type' => 'select',
-    '#options' => array(
-      null => 'Choisir...',
-      'École Rose des Vents' => 'École Rose des Vents',
-      'École des Sources' => 'École des Sources',
-      'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
-      'École Mont Saint-Louis' => 'École Mont Saint-Louis',
-      'École Saint-Rosaire' => 'École Saint-Rosaire',
-      'École Boijoli' => 'École Boijoli',
-      'École de l\'Estran' => 'École de l\'Estran',
-      'École de Baluchon' => 'École de Baluchon',
-      'École des Bois-et-Marées' => 'École des Bois-et-Marées',
-      'École Lévesque' => 'École Lévesque',
-      'École du Grand-Pavois–de Sainte-Agnès' => 'École du Grand-Pavois–de Sainte-Agnès',
-      'École du Grand-Pavois–de Saint-Yves' => 'École du Grand-Pavois–de Saint-Yves',
-      'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
-      'École Saint-Rosaire' => 'École Saint-Rosaire',
-      'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
-      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
-      'École à la maison'=> 'École à la maison',
-      ),
+    '#options' => nids_ecoles(),
     '#required' => FALSE,
     '#states' => array(
       'visible' => array(
@@ -829,26 +791,7 @@ function nids_obscour_form($form, &$form_state) {
   $form['ecole'] = array(
     '#title' => t("Nom de l'école"),
     '#type' => 'select',
-    '#options' => array(
-      null => 'Choisir...',
-      'École Rose des Vents' => 'École Rose des Vents',
-      'École des Sources' => 'École des Sources',
-      'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
-      'École Mont Saint-Louis' => 'École Mont Saint-Louis',
-      'École Saint-Rosaire' => 'École Saint-Rosaire',
-      'École Boijoli' => 'École Boijoli',
-      'École de l\'Estran' => 'École de l\'Estran',
-      'École de Baluchon' => 'École de Baluchon',
-      'École des Bois-et-Marées' => 'École des Bois-et-Marées',
-      'École Lévesque' => 'École Lévesque',
-      'École du Grand-Pavois–de Sainte-Agnès' => 'École du Grand-Pavois–de Sainte-Agnès',
-      'École du Grand-Pavois–de Saint-Yves' => 'École du Grand-Pavois–de Saint-Yves',
-      'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
-      'École Saint-Rosaire' => 'École Saint-Rosaire',
-      'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
-      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
-      'École à la maison'=> 'École à la maison',
-      ),
+    '#options' => nids_ecoles(),
     '#required' => FALSE,
     '#states' => array(
       'visible' => array(
@@ -1232,6 +1175,37 @@ $module_path = base_path().drupal_get_path('module', 'nids');
   );
   $form['#attached']['js'] = $js_files;
   return $form;
+}
+
+function nids_ecoles(){
+return array(
+      null => 'Choisir...',
+      "Commission scolaire des phares" => array(
+      'École Rose des Vents' => 'École Rose des Vents',
+      'École des Sources' => 'École des Sources',
+      'École du Rocher-Auteuil' => 'École du Rocher-Auteuil',
+      'École Mont Saint-Louis' => 'École Mont Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École Boijoli' => 'École Boijoli',
+      'École de l\'Estran' => 'École de l\'Estran',
+      'École de Baluchon' => 'École de Baluchon',
+      'École des Bois-et-Marées' => 'École des Bois-et-Marées',
+      'École Lévesque' => 'École Lévesque',
+      'École du Grand-Pavois–de Sainte-Agnès' => 'École du Grand-Pavois–de Sainte-Agnès',
+      'École du Grand-Pavois–de Saint-Yves' => 'École du Grand-Pavois–de Saint-Yves',
+      'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
+      'École Saint-Rosaire' => 'École Saint-Rosaire',
+      'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École à la maison'=> 'École à la maison',
+      ),
+      "Commission scolaire Kamouraska-Rivière du Loup" => array(
+        "École polyvalente La Pocatière"=>"École polyvalente La Pocatière",
+        "École secondaire Chanoine-Beaudet"=>"École secondaire Chanoine-Beaudet",
+        "École secondaire de Rivière-du-Loup"=>"École secondaire de Rivière-du-Loup",
+        "École des Vieux-Moulins"=>"École des Vieux-Moulins",
+      )
+  );
 }
 
 ?>
