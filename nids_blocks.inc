@@ -99,7 +99,12 @@ function nids_own_blocklist(){
 }
 
 function nids_list(){
-	$output=nids_map(970,550).nids_blocklist();
+	if(isset($_GET['filtre']) && $_GET['filtre']!='') { // Don't show map when there's a filter
+		$output='';
+	}else{
+		$output=nids_map(970,550);
+	}
+	$output.=nids_blocklist();
 	return $output;
 }
 
@@ -152,7 +157,11 @@ function nids_block_view($block_name = '') {
 		$query->fields('n',array('nid', 'uid', 'dncv', 'dncv_no', 
 			'nom_nichoir', 'parc', 'ecole', 'geography', 'date_installation', 
 			'habitat', 'hauteur', 'orientation', 'trou','type_nichoir'))
-		->fields('u',array('prenom', 'nom_famille'))->extend('TableSort')->orderByHeader($header)
+		->fields('u',array('prenom', 'nom_famille'));
+		if(isset($_GET['filtre']) && $_GET['filtre']!='') {
+		  $query->condition('dncv_no', db_like($_GET['filtre']), 'LIKE');
+		}
+		$query->extend('TableSort')->orderByHeader($header)
 		->limit(100);
 
 		$result = $query->execute();
@@ -207,8 +216,9 @@ if(empty($header))
 		t('Date d\'installation'), t('Habitat'), t('Hauteur (mètres)'), 
 		t('Orientation'),t('Occupé?'));
 
+
     //Return the content of the block
-$content=theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
+$content=drupal_render(drupal_get_form('nids_nichoirs_filter_form')).theme('table', array('header' => $header, 'rows' => $rows)).theme('pager');
 $block = array(
 	'subject' => t(''),
 	'content' => $content,
@@ -505,7 +515,7 @@ elseif ($block_name == 'home_page_data') {
 	'<div style="margin: -30px 5px 10px 10px;">
 		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numParticipants']. '</text> participants  &nbsp&nbsp
 		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numNests']. '</text> nichoirs installés   &nbsp&nbsp
-		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numOccuper']. '</text> nichoirs occupés en 2017   &nbsp&nbsp
+		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numOccuper']. '</text> nichoirs occupés en 2018   &nbsp&nbsp
 		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numObservations']. '</text> observations d\'oiseaux de &nbsp
 		<text style="font-size: 25px;font-weight:bold;">' .$myInfo['numEspeces']. '</text> espèces différentes dans les cours
 	</div>';
@@ -527,7 +537,7 @@ function getCount($myTable, $all){
 	}
 	elseif($myTable === 'nids_nichoirs_obs' && $all === true){
 		
-		$query1=db_query("SELECT count(b.obs_id) AS cnt FROM ( SELECT max(nids_nichoirs_obs.obs_id) AS mid FROM nids_nichoirs_obs GROUP BY nids_nichoirs_obs.nid_id) a, nids_nichoirs_obs b WHERE a.mid = b.obs_id AND date_obs>'2017-01-01' AND NULLIF(b.type_obs::text, ''::text)::integer <= 8")->fetchField();
+		$query1=db_query("SELECT count(DISTINCT b.nid_id) AS cnt FROM ( SELECT nids_nichoirs_obs.obs_id AS mid, nids_nichoirs_obs.nid_id FROM nids_nichoirs_obs GROUP BY nids_nichoirs_obs.nid_id, nids_nichoirs_obs.obs_id HAVING  date_obs=max(date_obs)) a, nids_nichoirs_obs b WHERE a.mid = b.obs_id AND date_obs>'2018-01-01' AND NULLIF(b.type_obs::text, ''::text)::integer <= 8")->fetchField();
 		$numRows=$query1;
 	}
 	else{

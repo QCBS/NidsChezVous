@@ -323,3 +323,11 @@
 img[src*="gstatic.com/"], img[src*="googleapis.com/"] {
 max-width: none !important;
 }
+
+#nids-nichoirs-filter-form{
+  padding:0px;
+  margin:0px;
+}
+#edit-filtre-nichoir{
+  float:left;
+}

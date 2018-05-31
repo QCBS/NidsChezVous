@@ -921,6 +921,8 @@ $form['#submit'][] = 'cour_form_submit';
 return $form;
 }
 
+
+
 // Form validation handler.
 function nichoir_form_validate($form, &$form_state) {
 	if (is_numeric($form_state['values']['hauteur'])==false & $form_state['values']['hauteur']!='')
@@ -1089,6 +1091,29 @@ function nids_form_validate($form, &$form_state){
 
 }
 
+
+function nids_nichoirs_filter_form($form,&$form_state){
+    
+    $form['filtre_nichoir'] = array(
+    '#type' => 'textfield',
+    '#default_value'=> isset($_GET['filtre'])?$_GET['filtre']:'',
+    '#size' => '20',
+    '#attributes'=>array('placeholder'=>t('Numéro du nichoir')),
+    );
+
+    $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Filtrer'),
+    );
+    $form['#submit'][] = 'nids_filter_form_submit';
+    return $form;
+}
+
+function nids_filter_form_submit($form, &$form_state){
+  drupal_goto('/explorer/liste_nids',array('query'=>array(
+'filtre'=>$form_state['values']['filtre_nichoir'])));
+}
+
 function ajax_oiseaux_pics_callback(){
   $photo=array();
   $oiseaux=_observation_oiseaux_pic(false);
@@ -1158,9 +1183,11 @@ function nids_graphs_sp_form($form,&$form_state){
       '#title' => t("Année"),
       '#type' => 'select',
       '#options' => array(
-          2014=>'2014',
-          2015=>'2015',
+          2018=>'2018',
+          2017=>'2017',
           2016=>'2016',
+          2015=>'2015',
+          2014=>'2014',
         ),
       '#required' => FALSE,
       '#default_value' => "",
@@ -1196,7 +1223,7 @@ return array(
       'École de Mont-Saint-Louis' => 'École de Mont-Saint-Louis',
       'École Saint-Rosaire' => 'École Saint-Rosaire',
       'École des Beaux-Séjours–de Sainte-Odile'=>'École des Beaux-Séjours–de Sainte-Odile',
-      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–de Sainte-Odile',
+      'École des Beaux-Séjours–D\'Amours'=>'École des Beaux-Séjours–D\'Amours',
       'École à la maison'=> 'École à la maison',
       ),
       "Commission scolaire Kamouraska-Rivière du Loup" => array(
